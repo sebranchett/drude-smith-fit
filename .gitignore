@@ -1,0 +1,4 @@
+# Ignore generated images
+*.png
+mobility.csv
+.vscode
