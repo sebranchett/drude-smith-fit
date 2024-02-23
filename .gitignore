@@ -2,3 +2,5 @@
 *.png
 mobility.csv
 .vscode
+__pycache__/
+
