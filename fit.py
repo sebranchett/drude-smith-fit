@@ -4,6 +4,7 @@ from data_plots import plot_complex_numbers
 from data_plots import plot_frequency_vs_real_part
 from data_plots import plot_frequency_vs_imaginary_part
 from data_plots import plot_frequency_vs_magnitude
+from data_plots import plot_frequency_vs_real_and_imaginary_parts
 
 
 def read_csv(filename):
@@ -26,10 +27,17 @@ def read_csv(filename):
     return np.array(frequencies), np.array(complex_numbers)
 
 
+def calculate_mobility(frequencies, complex_numbers):
+    impedance = np.divide(1, complex_numbers)
+    mobility = np.divide(1, (2 * np.pi * frequencies * impedance))
+    return mobility
+
+
 if __name__ == "__main__":
     filename = "mobility.csv"
     frequencies, complex_numbers = read_csv(filename)
-    plot_complex_numbers(complex_numbers)
-    plot_frequency_vs_real_part(frequencies, complex_numbers)
-    plot_frequency_vs_imaginary_part(frequencies, complex_numbers)
-    plot_frequency_vs_magnitude(frequencies, complex_numbers)
+    # plot_complex_numbers(complex_numbers)
+    # plot_frequency_vs_real_part(frequencies, complex_numbers)
+    # plot_frequency_vs_imaginary_part(frequencies, complex_numbers)
+    # plot_frequency_vs_magnitude(frequencies, complex_numbers)
+    plot_frequency_vs_real_and_imaginary_parts(frequencies, complex_numbers)

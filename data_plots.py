@@ -49,3 +49,22 @@ def plot_frequency_vs_magnitude(frequencies, complex_numbers):
     plt.title('Frequency vs Magnitude')
     plt.savefig('frequency_vs_magnitude.png')
     plt.show()
+
+
+def plot_frequency_vs_real_and_imaginary_parts(frequencies, complex_numbers):
+    plt.plot(
+        frequencies,
+        [complex_number.real for complex_number in complex_numbers],
+        label='Real Part'
+    )
+    plt.plot(
+        frequencies,
+        [complex_number.imag for complex_number in complex_numbers],
+        label='Imaginary Part'
+    )
+    plt.xlabel('Frequency')
+    plt.ylabel('Real and Imaginary Parts')
+    plt.title('Frequency vs Real and Imaginary Parts')
+    plt.legend()
+    plt.savefig('frequency_vs_real_and_imaginary_parts.png')
+    plt.show()
