@@ -4,7 +4,7 @@ from data_plots import plot_frequency_vs_real_and_imaginary_parts
 from scipy.optimize import curve_fit
 
 
-def read_csv(filename):
+def read_csv(filename, min_frequency, max_frequency):
     frequencies = []
     complex_numbers = []
 
@@ -13,13 +13,14 @@ def read_csv(filename):
         next(reader)  # Skip header row
 
         for row in reader:
-            frequency = float(row[0])
-            real_part = float(row[2])
-            imaginary_part = float(row[1])
-            complex_number = complex(real_part, imaginary_part)
+            if min_frequency <= float(row[0]) <= max_frequency:
+                frequency = float(row[0])
+                real_part = float(row[2])
+                imaginary_part = float(row[1])
+                complex_number = complex(real_part, imaginary_part)
 
-            frequencies.append(frequency)
-            complex_numbers.append(complex_number)
+                frequencies.append(frequency)
+                complex_numbers.append(complex_number)
 
     return np.array(frequencies), np.array(complex_numbers)
 
@@ -43,7 +44,17 @@ def real_fit_function(frequencies, mstar, tau, c1, c2, c3):
 
 if __name__ == "__main__":
     filename = "mobility.csv"
-    frequencies, complex_numbers = read_csv(filename)
+
+    min_frequency = 0.3E12
+    max_frequency = 2.2E12
+
+    frequencies, complex_numbers = read_csv(
+        filename, min_frequency, max_frequency
+    )
+
+    # plot_frequency_vs_real_and_imaginary_parts(
+    #     frequencies, complex_numbers
+    # )
 
     # Initial guess for the parameters
     mstar = 0.18 * 9.10938356 * 10E-31
@@ -71,8 +82,5 @@ if __name__ == "__main__":
     plot_frequency_vs_real_and_imaginary_parts(
         frequencies, fitted_complex_numbers
     )
-
-    # fitted_complex_numbers = fit_function(
-    #     frequencies, mstar, tau, c1, c2, c3
 
     print("Fitted parameters:", params)
