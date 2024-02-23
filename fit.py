@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     # Perform the least squares fit
     params, _ = curve_fit(
-        real_fit_function, frequencies, np.real(complex_numbers),
+        real_fit_function, frequencies, complex_numbers,
         p0=initial_guess
     )
 
