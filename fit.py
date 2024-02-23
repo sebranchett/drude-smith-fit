@@ -1,6 +1,7 @@
 import csv
 import numpy as np
 from data_plots import plot_frequency_vs_real_and_imaginary_parts
+from scipy.optimize import curve_fit
 
 
 def read_csv(filename):
@@ -35,21 +36,43 @@ def fit_function(frequencies, mstar, tau, c1, c2, c3):
     return complex_argument
 
 
+def real_fit_function(frequencies, mstar, tau, c1, c2, c3):
+    # Define the function to fit
+    return np.real(fit_function(frequencies, mstar, tau, c1, c2, c3))
+
+
 if __name__ == "__main__":
     filename = "mobility.csv"
     frequencies, complex_numbers = read_csv(filename)
 
-    # Perform the least squares fit SEB TODO
-
-    # Use the fitted parameters to calculate the fitted complex numbers
-    mstar = 0.18 * 9.109 * 10E31
+    # Initial guess for the parameters
+    mstar = 0.18 * 9.10938356 * 10E-31
     tau = 80 * 10E-15
     c1 = -0.82
     c2 = 0.0
     c3 = 0.0
-    fitted_complex_numbers = fit_function(frequencies, mstar, tau, c1, c2, c3)
+    initial_guess = [mstar, tau, c1, c2, c3]
+
+    # Perform the least squares fit
+    params, _ = curve_fit(
+        real_fit_function, frequencies, np.real(complex_numbers),
+        p0=initial_guess
+    )
+
+    # Extract the fitted parameters
+    mstar_fit, tau_fit, c1_fit, c2_fit, c3_fit = params
+
+    # Use the fitted parameters to calculate the fitted complex numbers
+    fitted_complex_numbers = fit_function(
+        frequencies, mstar_fit, tau_fit, c1_fit, c2_fit, c3_fit
+    )
 
     # Plot the fitted complex numbers
     plot_frequency_vs_real_and_imaginary_parts(
         frequencies, fitted_complex_numbers
     )
+
+    # fitted_complex_numbers = fit_function(
+    #     frequencies, mstar, tau, c1, c2, c3
+
+    print("Fitted parameters:", params)
