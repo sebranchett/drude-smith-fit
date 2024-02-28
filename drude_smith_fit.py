@@ -8,6 +8,24 @@ import matplotlib.pyplot as plt
 def print_help():
     print("Usage: python drude_smith_fit.py [input_filename [min_frequency" +
           " [max_frequency [output_filename]]]]")
+    print("")
+    print("Fits experimental data to the Drude-Smith model for mobility.")
+    print("")
+    print("")
+    print("input_filename: The name of the file containing the experimental" +
+          " data. The file should be a CSV file with the first column" +
+          " containing the frequency in Hz, the second column containing" +
+          " the imaginary part of the complex number, and the third column" +
+          " containing the real part of the complex number.")
+    print("")
+    print("min_frequency: The minimum frequency to include in the fit. " +
+          "Default is 0.3 THz.")
+    print("")
+    print("max_frequency: The maximum frequency to include in the fit. " +
+          "Default is 2.2 THz.")
+    print("")
+    print("output_filename: The name of the file to save the plot to. " +
+          "Default is 'experimental_and_fitted_data.png'.")
 
 
 def read_csv(filename, min_frequency, max_frequency):
