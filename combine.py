@@ -1,7 +1,5 @@
 import csv
 import numpy as np
-from data_plots import plot_frequency_vs_real_and_imaginary_parts
-# from data_plots import plot_experimental_data
 from scipy.optimize import curve_fit
 from reproduce import drude_smith_c1
 import matplotlib.pyplot as plt
@@ -34,21 +32,38 @@ def fit_function(frequencies, m, tau, c1):
     return stretched_results
 
 
-def plot_experimental_data(frequencies, complex_numbers):
+def plot_experimental_and_fitted_data(
+    frequencies, complex_numbers, fitted_complex_numbers
+):
     plt.scatter(
         frequencies,
         [complex_number.real for complex_number in complex_numbers],
-        marker='.'
+        marker='.',
+        label='Experimental',
+        color='red'
     )
     plt.scatter(
         frequencies,
         [complex_number.imag for complex_number in complex_numbers],
-        marker='.'
+        marker='.',
+        color='red'
     )
+    plt.plot(
+        frequencies,
+        [complex_number.real for complex_number in fitted_complex_numbers],
+        label='Fitted',
+        color='blue'
+    )
+    plt.plot(
+        frequencies,
+        [complex_number.imag for complex_number in fitted_complex_numbers],
+        color='blue'
+    )
+    plt.legend()
     plt.xlabel('Frequency')
     plt.ylabel('Real and Imaginary Parts')
-    plt.title('Experimental Data')
-    plt.savefig('experimental_data.png')
+    plt.title('Experimental and Fitted Data')
+    plt.savefig('experimental_and_fitted_data.png')
     plt.show()
 
 
@@ -62,10 +77,6 @@ if __name__ == "__main__":
         filename, min_frequency, max_frequency
     )
 
-    plot_experimental_data(
-        frequencies, complex_numbers
-    )
-
     stretched_complex_numbers = np.concatenate(
         (np.real(complex_numbers), np.imag(complex_numbers))
     )
@@ -76,23 +87,27 @@ if __name__ == "__main__":
     c1 = -0.82
     initial_guess = [m, tau, c1]
 
-    # Perform the least squares fit
+    # Perform the fit
     params, _ = curve_fit(
         fit_function, frequencies, stretched_complex_numbers,
         p0=initial_guess
     )
 
     # Extract the fitted parameters
-    mstar_fit, tau_fit, c1_fit = params
+    m_fit, tau_fit, c1_fit = params
+    print("Fitted value of m:", m_fit)
+    print("Fitted value of tau:", tau_fit)
+    print("Fitted value of c1:", c1_fit)
 
     # Use the fitted parameters to calculate the fitted complex numbers
-    fitted_complex_numbers = fit_function(
-        frequencies, mstar_fit, tau_fit, c1_fit
+    fitted_stretched_complex_numbers = fit_function(
+        frequencies, m_fit, tau_fit, c1_fit
     )
 
-    # Plot the fitted complex numbers
-    plot_frequency_vs_real_and_imaginary_parts(
-        frequencies, fitted_complex_numbers
-    )
+    fitted_complex_numbers = \
+        fitted_stretched_complex_numbers[:len(frequencies)] + \
+        1j * fitted_stretched_complex_numbers[len(frequencies):]
 
-    print("Fitted parameters:", params)
+    plot_experimental_and_fitted_data(
+        frequencies, complex_numbers, fitted_complex_numbers
+    )
