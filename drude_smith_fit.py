@@ -1,7 +1,13 @@
+import sys
 import csv
 import numpy as np
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
+
+
+def print_help():
+    print("Usage: python drude_smith_fit.py [input_filename [min_frequency" +
+          " [max_frequency [output_filename]]]]")
 
 
 def read_csv(filename, min_frequency, max_frequency):
@@ -65,7 +71,8 @@ def fit_function(frequencies, m, tau, c1):
 
 
 def plot_experimental_and_fitted_data(
-    frequencies, complex_numbers, fitted_complex_numbers, title
+    frequencies, complex_numbers, fitted_complex_numbers, title,
+    output_filename
 ):
     plt.scatter(
         frequencies,
@@ -95,15 +102,27 @@ def plot_experimental_and_fitted_data(
     plt.xlabel('Frequency')
     plt.ylabel('Real and Imaginary Parts')
     plt.title(title)
-    plt.savefig('experimental_and_fitted_data.png')
+    plt.savefig(output_filename)
     plt.show()
 
 
 if __name__ == "__main__":
     filename = "mobility.csv"
-
     min_frequency = 0.3E12
     max_frequency = 2.2E12
+    output_filename = "experimental_and_fitted_data.png"
+
+    if len(sys.argv) > 1:
+        filename = sys.argv[1]
+        if filename == "-h":
+            print_help()
+            sys.exit(0)
+        if len(sys.argv) > 2:
+            min_frequency = float(sys.argv[2])
+            if len(sys.argv) > 3:
+                max_frequency = float(sys.argv[3])
+                if len(sys.argv) > 4:
+                    output_filename = sys.argv[4]
 
     frequencies, complex_numbers = read_csv(
         filename, min_frequency, max_frequency
@@ -136,7 +155,7 @@ if __name__ == "__main__":
     print("Fitted value of m:", m_fit)
     print("Fitted value of tau:", tau_fit * 1E-15)  # Convert to femtoseconds
     print("Fitted value of c1:", c1_fit)
-    print("One standard deviation:", np.sqrt(np.diag(pcov)))
+    # print("One standard deviation:", np.sqrt(np.diag(pcov)))
 
     # Use the fitted parameters to calculate the fitted complex numbers
     fitted_stretched_complex_numbers = fit_function(
@@ -149,6 +168,7 @@ if __name__ == "__main__":
 
     plot_experimental_and_fitted_data(
         frequencies, complex_numbers, fitted_complex_numbers,
-        title="m_fit = %.3e, tau_fit = %.3e, c_fit = %.3e"
-        % (m_fit, tau_fit * 1E-15, c1_fit)
+        "m_fit = %.3e, tau_fit = %.3e, c_fit = %.3e"
+        % (m_fit, tau_fit * 1E-15, c1_fit),
+        output_filename
     )  # Convert to femtoseconds
