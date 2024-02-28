@@ -64,7 +64,7 @@ def fit_function(frequencies, m, tau, c1):
 
 
 def plot_experimental_and_fitted_data(
-    frequencies, complex_numbers, fitted_complex_numbers
+    frequencies, complex_numbers, fitted_complex_numbers, title
 ):
     plt.scatter(
         frequencies,
@@ -93,7 +93,7 @@ def plot_experimental_and_fitted_data(
     plt.legend()
     plt.xlabel('Frequency')
     plt.ylabel('Real and Imaginary Parts')
-    plt.title('Experimental and Fitted Data')
+    plt.title(title)
     plt.savefig('experimental_and_fitted_data.png')
     plt.show()
 
@@ -113,14 +113,17 @@ if __name__ == "__main__":
     )
 
     # encourage imaginary part to be negative
-    max_tau = 0.5 / (2. * np.pi * (max_frequency + min_frequency))
+    min_c1 = -1.
+    max_c1 = 0.
+    min_tau = 0.2 / (2. * np.pi * (min_frequency + max_frequency))
+    max_tau = 1.6 / (2. * np.pi * (min_frequency + max_frequency))
+    print(min_tau, max_tau)
 
-    # initial_guess = [m, tau, c1]
-    minima = [-np.inf, 0., -1.]
-    maxima = [np.inf, max_tau, 0.]
+    minima = [-np.inf, min_tau, min_c1]
+    maxima = [np.inf, max_tau, max_c1]
 
     # Perform the fit
-    params, _ = curve_fit(
+    params, pcov = curve_fit(
         fit_function, frequencies, stretched_complex_numbers,
         bounds=(minima, maxima)
     )
@@ -130,6 +133,7 @@ if __name__ == "__main__":
     print("Fitted value of m:", m_fit)
     print("Fitted value of tau:", tau_fit)
     print("Fitted value of c1:", c1_fit)
+    print("One standard deviation:", np.sqrt(np.diag(pcov)))
 
     # Use the fitted parameters to calculate the fitted complex numbers
     fitted_stretched_complex_numbers = fit_function(
@@ -140,6 +144,9 @@ if __name__ == "__main__":
         fitted_stretched_complex_numbers[:len(frequencies)] + \
         1j * fitted_stretched_complex_numbers[len(frequencies):]
 
+
     plot_experimental_and_fitted_data(
-        frequencies, complex_numbers, fitted_complex_numbers
+        frequencies, complex_numbers, fitted_complex_numbers,
+        title="m_fit = %.3e, tau_fit = %.3e, c_fit = %.3e"
+        % (m_fit, tau_fit, c1_fit)
     )
