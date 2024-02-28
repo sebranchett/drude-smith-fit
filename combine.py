@@ -112,16 +112,17 @@ if __name__ == "__main__":
         (np.real(complex_numbers), np.imag(complex_numbers))
     )
 
-    # Initial guess for the parameters
-    m = 0.18  # mstar = m * m0
-    tau = .80 * 10E-15  # 80 fs = 80 * 10E-15 s
-    c1 = -0.82
-    initial_guess = [m, tau, c1]
+    # encourage imaginary part to be negative
+    max_tau = 0.5 / (2. * np.pi * (max_frequency + min_frequency))
+
+    # initial_guess = [m, tau, c1]
+    minima = [-np.inf, 0., -1.]
+    maxima = [np.inf, max_tau, 0.]
 
     # Perform the fit
     params, _ = curve_fit(
         fit_function, frequencies, stretched_complex_numbers,
-        p0=initial_guess
+        bounds=(minima, maxima)
     )
 
     # Extract the fitted parameters
