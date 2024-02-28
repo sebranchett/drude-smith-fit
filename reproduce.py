@@ -3,8 +3,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-def fit_function2(frequency, e, mstar, tau, c1):
-    # Calculate the Drude-Smith mobility
+def drude_smith_c1(frequency, e, mstar, tau, c1):
+    # Calculate the Drude-Smith mobility with only 1 c coefficient
     factor = e * tau / mstar
     omega = 2 * np.pi * frequency
     onePlusw2t2 = 1. + (omega * omega * tau * tau)
@@ -16,8 +16,8 @@ def fit_function2(frequency, e, mstar, tau, c1):
     return factor * result / (onePlusw2t2*onePlusw2t2)
 
 
-def fit_function3(frequencies, e, mstar, tau, c1, c2, c3):
-    # Define your function here, using the complex argument
+def drude_smith_c3(frequencies, e, mstar, tau, c1, c2=0., c3=0.):
+    # Calculate the Drude-Smith mobility with 3 c coefficients
     f1 = e * tau / mstar
     f2 = 1 / (1 - 1j * 2 * np.pi * frequencies * tau)
     f3 = 1 + (c1 / (1 - 1j * 2 * np.pi * frequencies * tau)) + \
@@ -30,13 +30,10 @@ def fit_function3(frequencies, e, mstar, tau, c1, c2, c3):
 e = 1.602 * 10E-19
 m0 = 9.109 * 10E-31
 mstar = 0.18 * m0
-tau = 80 * 10E-15
-points = np.linspace(.1*10E10, .7*10E10, 21)
+tau = .80 * 10E-15  # 80 fs = 80 * 10E-15 s
+points = np.linspace(.1*10E12, .7*10E12, 21)
 c1 = -0.82
-# fit_result2 = fit_function2(points, e, mstar, tau, c1)
-# plt.plot(points, fit_result2.real, label='real2')
-# plt.plot(points, fit_result2.imag, label='imag2')
-fit_result3 = fit_function3(points, e, mstar, tau, c1, 0., 0.)
+fit_result3 = drude_smith_c1(points, e, mstar, tau, c1)
 plt.plot(points, fit_result3.real, label='real3')
 plt.plot(points, fit_result3.imag, label='imag3')
 
