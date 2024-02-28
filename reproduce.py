@@ -35,16 +35,17 @@ def drude_smith_c3(frequencies, m, tau, c1, c2=0., c3=0.):
     return complex_argument
 
 
-m = 0.18  # mstar = m * m0
-tau = .80 * 10E-15  # 80 fs = 80 * 10E-15 s
-points = np.linspace(.1*10E12, .7*10E12, 21)
-c1 = -0.82
-fit_result3 = drude_smith_c3(points, m, tau, c1)
-plt.plot(points, fit_result3.real, label='real3')
-plt.plot(points, fit_result3.imag, label='imag3')
+if __name__ == "__main__":
+    m = 0.18  # mstar = m * m0
+    tau = .80 * 10E-15  # 80 fs = 80 * 10E-15 s
+    points = np.linspace(.1*10E12, .7*10E12, 21)
+    c1 = -0.82
+    fit_result3 = drude_smith_c3(points, m, tau, c1)
+    plt.plot(points, fit_result3.real, label='real3')
+    plt.plot(points, fit_result3.imag, label='imag3')
 
-plt.xlabel('Points')
-plt.ylabel('mu_DS')
-plt.legend()
-plt.savefig('what_know.png')
-plt.show()
+    plt.xlabel('Points')
+    plt.ylabel('mu_DS')
+    plt.legend()
+    plt.savefig('what_know.png')
+    plt.show()
