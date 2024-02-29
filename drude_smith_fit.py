@@ -57,8 +57,8 @@ def read_csv(filename, min_frequency, max_frequency):
 
 def drude_smith_c3(frequencies, m, tau, c1, c2=0., c3=0.):
     # Calculate the Drude-Smith mobility with 3 c coefficients
-    e = 1.602 * 10E-19
-    m0 = 9.109 * 10E-31
+    e = 1.602E-19
+    m0 = 9.109E-31
 
     mstar = m * m0
     f1 = e * tau / mstar
