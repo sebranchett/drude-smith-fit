@@ -43,7 +43,6 @@ def read_csv(filename, min_frequency, max_frequency):
             reader = csv.reader(file, delimiter=';')
 
         for row in reader:
-            print(row)
             if min_frequency <= float(row[0]) <= max_frequency:
                 frequency = float(row[0])
                 real_part = float(row[2])
@@ -165,7 +164,6 @@ if __name__ == "__main__":
     max_c1 = 0.
     min_tau = 0.
     max_tau = np.inf
-    print(min_tau, max_tau)
 
     minima = [-np.inf, min_tau, min_c1]
     maxima = [np.inf, max_tau, max_c1]
