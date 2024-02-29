@@ -33,9 +33,17 @@ def read_csv(filename, min_frequency, max_frequency):
     complex_numbers = []
 
     with open(filename, 'r') as file:
-        reader = csv.reader(file)
+        content = file.read()
+        find_comma = content.find(',')
+    with open(filename, 'r') as file:
+        if find_comma != -1:
+            reader = csv.reader(file, delimiter=',')
+        else:
+            # try a semi-colon
+            reader = csv.reader(file, delimiter=';')
 
         for row in reader:
+            print(row)
             if min_frequency <= float(row[0]) <= max_frequency:
                 frequency = float(row[0])
                 real_part = float(row[2])
