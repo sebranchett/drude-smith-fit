@@ -2,7 +2,7 @@
 Created with the help of GitHub Copilot.
 
 ## Things to note
-* e = 1.602 * 10E-19 and m0 = 9.109 * 10E-31, so SI units (not cm)
+* e = 1.602E-19 and m0 = 9.109E-31, so SI units (not cm)
 * m_fit is $m/\phi$ where $m^* = m * m0$
 
 ## More things to note
