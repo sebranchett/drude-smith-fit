@@ -143,13 +143,15 @@ if __name__ == "__main__":
     )
 
     # Set some physics boundaries
+    min_m = 0.  # this helps the fit to converge
+    max_m = 10.  # this helps the fit to converge
     min_c1 = -1.
     max_c1 = 0.
     min_tau = 0.
     max_tau = np.inf
 
-    minima = [-np.inf, min_tau, min_c1]
-    maxima = [np.inf, max_tau, max_c1]
+    minima = [min_m, min_tau, min_c1]
+    maxima = [max_m, max_tau, max_c1]
 
     # Perform the fit
     params, pcov = curve_fit(
