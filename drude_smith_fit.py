@@ -17,6 +17,7 @@ def print_help():
           " containing the frequency in Hz, the second column containing" +
           " the imaginary part of the complex number, and the third column" +
           " containing the real part of the complex number.")
+    print("*** UNITS must be cm2 V-1 s-1. ***")
     print("")
     print("min_frequency: The minimum frequency to include in the fit. " +
           "Default is 0.3 THz.")
@@ -55,13 +56,14 @@ def read_csv(filename, min_frequency, max_frequency):
     return np.array(frequencies), np.array(complex_numbers)
 
 
-def drude_smith_c3(frequencies, m, tau, c1, c2=0., c3=0.):
+def drude_smith_c3(frequencies, m, tau, c1, c2=0., c3=0., phi=1.):
     # Calculate the Drude-Smith mobility with 3 c coefficients
     e = 1.602E-19
     m0 = 9.109E-31
-
+    conversion = 10000.  # input is in cm^2
+    
     mstar = m * m0
-    f1 = e * tau / mstar
+    f1 = conversion * phi * e * tau / mstar
     f2 = 1 / (1 - 1j * 2 * np.pi * frequencies * tau)
     f3 = 1 + (c1 / (1 - 1j * 2 * np.pi * frequencies * tau)) + \
              (c2 / (1 - 1j * 2 * np.pi * frequencies * tau) ** 2) + \
@@ -158,13 +160,14 @@ if __name__ == "__main__":
         fit_function, frequencies, stretched_complex_numbers,
         bounds=(minima, maxima)
     )
+    std_dev = np.sqrt(np.diag(pcov))
 
     # Extract the fitted parameters
     m_fit, tau_fit, c1_fit = params
-    print("Fitted value of m:", m_fit)
-    print("Fitted value of tau:", tau_fit * 1E-15)  # Convert to femtoseconds
-    print("Fitted value of c1:", c1_fit)
-    # print("One standard deviation:", np.sqrt(np.diag(pcov)))
+    print("Fitted value of m:", '{:.3e}'.format(m_fit), "+/-", '{:.3e}'.format(std_dev[0]))
+    print("Fitted value of tau:", '{:.3e}'.format(tau_fit), 
+          "femtoseconds +/-", '{:.3e}'.format(std_dev[1]), 'femtoseconds')  # Convert to femtoseconds
+    print("Fitted value of c1:", '{:.3e}'.format(c1_fit), "+/-", '{:.3e}'.format(std_dev[2]))
 
     # Use the fitted parameters to calculate the fitted complex numbers
     fitted_stretched_complex_numbers = fit_function(
