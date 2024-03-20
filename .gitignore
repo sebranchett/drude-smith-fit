@@ -7,4 +7,5 @@ __pycache__/
 *.jpeg
 *.pdf
 *.csv
+*.txt
 .ipynb_checkpoints/
