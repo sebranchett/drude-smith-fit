@@ -61,7 +61,7 @@ def drude_smith_c3(frequencies, m, tau, c1, c2=0., c3=0., phi=1.):
     e = 1.602E-19
     m0 = 9.109E-31
     conversion = 10000.  # input is in cm^2
-    
+
     mstar = m * m0
     f1 = conversion * phi * e * tau / mstar
     f2 = 1 / (1 - 1j * 2 * np.pi * frequencies * tau)
@@ -78,6 +78,46 @@ def fit_function(frequencies, m, tau, c1):
     results = drude_smith_c3(frequencies, m, tau * 1E-15, c1)
     stretched_results = np.concatenate((np.real(results), np.imag(results)))
     return stretched_results
+
+
+def perform_fit(frequencies, complex_numbers):
+    # Set some physics boundaries
+    min_m = 0.  # this helps the fit to converge
+    max_m = 10.  # this helps the fit to converge
+    min_c1 = -1.
+    max_c1 = 0.
+    min_tau = 0.
+    max_tau = np.inf
+
+    minima = [min_m, min_tau, min_c1]
+    maxima = [max_m, max_tau, max_c1]
+
+    # To fit both the real and imaginary parts of the complex numbers
+    # create a 'stretched' array
+    stretched_complex_numbers = np.concatenate(
+        (np.real(complex_numbers), np.imag(complex_numbers))
+    )
+
+    # Perform the fit
+    params, pcov = curve_fit(
+        fit_function, frequencies, stretched_complex_numbers,
+        bounds=(minima, maxima)
+    )
+    std_dev = np.sqrt(np.diag(pcov))
+
+    # Extract the fitted parameters
+    m_fit, tau_fit, c1_fit = params
+
+    # Use the fitted parameters to calculate the fitted complex numbers
+    fitted_stretched_complex_numbers = fit_function(
+        frequencies, m_fit, tau_fit, c1_fit
+    )
+
+    fitted_complex_numbers = \
+        fitted_stretched_complex_numbers[:len(frequencies)] + \
+        1j * fitted_stretched_complex_numbers[len(frequencies):]
+
+    return [fitted_complex_numbers, m_fit, tau_fit, c1_fit, std_dev]
 
 
 def plot_experimental_and_fitted_data(
@@ -138,49 +178,20 @@ if __name__ == "__main__":
         filename, min_frequency, max_frequency
     )
 
-    # To fit both the real and imaginary parts of the complex numbers
-    # create a 'stretched' array
-    stretched_complex_numbers = np.concatenate(
-        (np.real(complex_numbers), np.imag(complex_numbers))
+    fitted_complex_numbers, m_fit, tau_fit, c1_fit, std_dev = perform_fit(
+        frequencies, complex_numbers
     )
 
-    # Set some physics boundaries
-    min_m = 0.  # this helps the fit to converge
-    max_m = 10.  # this helps the fit to converge
-    min_c1 = -1.
-    max_c1 = 0.
-    min_tau = 0.
-    max_tau = np.inf
-
-    minima = [min_m, min_tau, min_c1]
-    maxima = [max_m, max_tau, max_c1]
-
-    # Perform the fit
-    params, pcov = curve_fit(
-        fit_function, frequencies, stretched_complex_numbers,
-        bounds=(minima, maxima)
-    )
-    std_dev = np.sqrt(np.diag(pcov))
-
-    # Extract the fitted parameters
-    m_fit, tau_fit, c1_fit = params
-    print("Fitted value of m:", '{:.3e}'.format(m_fit), "+/-", '{:.3e}'.format(std_dev[0]))
-    print("Fitted value of tau:", '{:.3e}'.format(tau_fit), 
-          "femtoseconds +/-", '{:.3e}'.format(std_dev[1]), 'femtoseconds')  # Convert to femtoseconds
-    print("Fitted value of c1:", '{:.3e}'.format(c1_fit), "+/-", '{:.3e}'.format(std_dev[2]))
-
-    # Use the fitted parameters to calculate the fitted complex numbers
-    fitted_stretched_complex_numbers = fit_function(
-        frequencies, m_fit, tau_fit, c1_fit
-    )
-
-    fitted_complex_numbers = \
-        fitted_stretched_complex_numbers[:len(frequencies)] + \
-        1j * fitted_stretched_complex_numbers[len(frequencies):]
+    print("Fitted value of m/phi:", '{:.3e}'.format(m_fit),
+          "+/-", '{:.3e}'.format(std_dev[0]))
+    print("Fitted value of tau:", '{:.3e}'.format(tau_fit),
+          "femtoseconds +/-", '{:.3e}'.format(std_dev[1]), 'femtoseconds')
+    print("Fitted value of c1:", '{:.3e}'.format(c1_fit),
+          "+/-", '{:.3e}'.format(std_dev[2]))
 
     plot_experimental_and_fitted_data(
         frequencies, complex_numbers, fitted_complex_numbers,
-        "m_fit = %.3e, tau_fit = %.3e, c_fit = %.3e"
+        "m_fit/phi = %.3e, tau_fit = %.3e, c_fit = %.3e"
         % (m_fit, tau_fit * 1E-15, c1_fit),
         output_filename
     )  # Convert to femtoseconds
