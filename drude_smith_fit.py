@@ -25,8 +25,9 @@ def print_help():
     print("max_frequency: The maximum frequency to include in the fit. " +
           "Default is 2.2 THz.")
     print("")
-    print("output_filename: The name of the file to save the plot to. " +
-          "Default is 'experimental_and_fitted_data.png'.")
+    print("The input file basename is used to create the output file names.")
+    print("This program creates a .png file with a graph of the fit and")
+    print("a .txt file with the fitted parameters.")
 
 
 def read_csv(filename, min_frequency, max_frequency):
@@ -160,7 +161,8 @@ if __name__ == "__main__":
     filename = "mobility.csv"
     min_frequency = 0.3E12
     max_frequency = 2.2E12
-    output_filename = "experimental_and_fitted_data.png"
+    image_filename = filename.split('.')[0] + '.png'
+    txt_filename = filename.split('.')[0] + '.txt'
 
     if len(sys.argv) > 1:
         filename = sys.argv[1]
@@ -171,8 +173,6 @@ if __name__ == "__main__":
             min_frequency = float(sys.argv[2])
             if len(sys.argv) > 3:
                 max_frequency = float(sys.argv[3])
-                if len(sys.argv) > 4:
-                    output_filename = sys.argv[4]
 
     frequencies, complex_numbers = read_csv(
         filename, min_frequency, max_frequency
@@ -193,5 +193,17 @@ if __name__ == "__main__":
         frequencies, complex_numbers, fitted_complex_numbers,
         "m_fit/phi = %.3e, tau_fit = %.3e, c_fit = %.3e"
         % (m_fit, tau_fit * 1E-15, c1_fit),
-        output_filename
+        image_filename
     )  # Convert to femtoseconds
+
+    with open(txt_filename, 'w') as file:
+        file.writelines("# m/phi, std, tau(fs), std, c1, std\n")
+        file.writelines(
+            "{:.3e}".format(m_fit) + ", " +
+            "{:.3e}".format(std_dev[0]) + ", " +
+            "{:.3e}".format(tau_fit) + ", " +
+            "{:.3e}".format(std_dev[1]) + ", " +
+            "{:.3e}".format(c1_fit) + ", " +
+            "{:.3e}".format(std_dev[2]) +
+            "\n"
+        )
