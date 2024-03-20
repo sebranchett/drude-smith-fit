@@ -165,8 +165,7 @@ if __name__ == "__main__":
     txt_filename = filename.split('.')[0] + '.txt'
 
     if len(sys.argv) > 1:
-        filename = sys.argv[1]
-        if filename == "-h":
+        if filename == "-h" or filename == "--help":
             print_help()
             sys.exit(0)
         if len(sys.argv) > 2:
