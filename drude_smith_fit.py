@@ -57,7 +57,7 @@ def read_csv(filename, min_frequency, max_frequency):
     return np.array(frequencies), np.array(complex_numbers)
 
 
-def drude_smith_c3(frequencies, m, tau, c1, c2=0., c3=0., phi=1.):
+def drude_smith_c3(frequencies, phi, m, tau, c1, c2=0., c3=0.):
     # Calculate the Drude-Smith mobility with 3 c coefficients
     e = 1.602E-19
     m0 = 9.109E-31
@@ -73,25 +73,106 @@ def drude_smith_c3(frequencies, m, tau, c1, c2=0., c3=0., phi=1.):
     return complex_argument
 
 
-def fit_function(frequencies, m, tau, c1):
+def arrange_parameters(fit_values, std_dev=False):
+    global input_parameters
+    index = 0
+    if isinstance(input_parameters[0], float):
+        if std_dev:
+            phi = 0.
+        else:
+            phi = input_parameters[0]
+    else:
+        phi = fit_values[index]
+        index += 1
+    if isinstance(input_parameters[1], float):
+        if std_dev:
+            m = 0.
+        else:
+            m = input_parameters[1]
+    else:
+        m = fit_values[index]
+        index += 1
+    if isinstance(input_parameters[2], float):
+        if std_dev:
+            tau = 0.
+        else:
+            tau = input_parameters[2]
+    else:
+        tau = fit_values[index]
+        index += 1
+    if isinstance(input_parameters[3], float):
+        if std_dev:
+            c1 = 0.
+        else:
+            c1 = input_parameters[3]
+    else:
+        c1 = fit_values[index]
+        index += 1
+    if isinstance(input_parameters[4], float):
+        if std_dev:
+            c2 = 0.
+        else:
+            c2 = input_parameters[4]
+    else:
+        c2 = fit_values[index]
+        index += 1
+    if isinstance(input_parameters[5], float):
+        if std_dev:
+            c3 = 0.
+        else:
+            c3 = input_parameters[5]
+    else:
+        c3 = fit_values[index]
+    return [phi, m, tau, c1, c2, c3]
+
+
+def fit_function_3(frequencies, fit01, fit02, fit03):
     # To get the fit to work, curve_fit needs to work in seconds,
     # but the Drude-Smith model uses femtoseconds
-    results = drude_smith_c3(frequencies, m, tau * 1E-15, c1)
+    fit_values = [fit01, fit02, fit03]
+    phi, m, tau, c1, c2, c3 = arrange_parameters(fit_values)
+    results = drude_smith_c3(frequencies, phi, m, tau * 1E-15, c1, c2, c3)
     stretched_results = np.concatenate((np.real(results), np.imag(results)))
     return stretched_results
 
 
 def perform_fit(frequencies, complex_numbers):
+    global input_parameters
     # Set some physics boundaries
+    min_phi = 0.
+    max_phi = 1.
     min_m = 0.  # this helps the fit to converge
     max_m = 10.  # this helps the fit to converge
-    min_c1 = -1.
-    max_c1 = 0.
     min_tau = 0.
     max_tau = np.inf
+    min_c1 = -1.
+    max_c1 = 0.
+    min_c2 = -1.
+    max_c2 = 1.
+    min_c3 = -1.
+    max_c3 = 1.
 
-    minima = [min_m, min_tau, min_c1]
-    maxima = [max_m, max_tau, max_c1]
+    minima = []
+    maxima = []
+
+    if not isinstance(input_parameters[0], float):
+        minima.append(min_phi)
+        maxima.append(max_phi)
+    if not isinstance(input_parameters[1], float):
+        minima.append(min_m)
+        maxima.append(max_m)
+    if not isinstance(input_parameters[2], float):
+        minima.append(min_tau)
+        maxima.append(max_tau)
+    if not isinstance(input_parameters[3], float):
+        minima.append(min_c1)
+        maxima.append(max_c1)
+    if not isinstance(input_parameters[4], float):
+        minima.append(min_c2)
+        maxima.append(max_c2)
+    if not isinstance(input_parameters[5], float):
+        minima.append(min_c3)
+        maxima.append(max_c3)
 
     # To fit both the real and imaginary parts of the complex numbers
     # create a 'stretched' array
@@ -101,24 +182,24 @@ def perform_fit(frequencies, complex_numbers):
 
     # Perform the fit
     params, pcov = curve_fit(
-        fit_function, frequencies, stretched_complex_numbers,
+        fit_function_3, frequencies, stretched_complex_numbers,
         bounds=(minima, maxima)
     )
-    std_dev = np.sqrt(np.diag(pcov))
-
-    # Extract the fitted parameters
-    m_fit, tau_fit, c1_fit = params
 
     # Use the fitted parameters to calculate the fitted complex numbers
-    fitted_stretched_complex_numbers = fit_function(
-        frequencies, m_fit, tau_fit, c1_fit
+    fitted_stretched_complex_numbers = fit_function_3(
+        frequencies, params[0], params[1], params[2]
     )
 
     fitted_complex_numbers = \
         fitted_stretched_complex_numbers[:len(frequencies)] + \
         1j * fitted_stretched_complex_numbers[len(frequencies):]
 
-    return [fitted_complex_numbers, m_fit, tau_fit, c1_fit, std_dev]
+    std_dev = np.sqrt(np.diag(pcov))
+    params_fit = arrange_parameters(params)
+    std_dev_fit = arrange_parameters(std_dev, True)
+
+    return [fitted_complex_numbers, params_fit, std_dev_fit]
 
 
 def plot_experimental_and_fitted_data(
@@ -158,9 +239,30 @@ def plot_experimental_and_fitted_data(
 
 
 if __name__ == "__main__":
+    global input_parameters
+
     filename = "mobility.csv"
     min_frequency = 0.3E12
     max_frequency = 2.2E12
+
+    fix_phi = 1.0
+    fix_m = False
+    fix_tau = False
+    fix_c1 = False
+    fix_c2 = 0.
+    fix_c3 = 0.
+
+    if not isinstance(fix_phi, float) and not isinstance(fix_m, float):
+        print("Error: phi and m cannot both be variable")
+        sys.exit(1)
+    input_parameters = [fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3]
+    num_real_numbers = sum(
+        isinstance(param, float) for param in input_parameters
+    )
+    if num_real_numbers != 3:
+        print("Error: need exactly 3 variable parameters in this version,")
+        print("found", num_real_numbers, "variable parameters")
+        sys.exit(1)
     image_filename = filename.split('.')[0] + '.png'
     txt_filename = filename.split('.')[0] + '.txt'
 
@@ -177,32 +279,48 @@ if __name__ == "__main__":
         filename, min_frequency, max_frequency
     )
 
-    fitted_complex_numbers, m_fit, tau_fit, c1_fit, std_dev = perform_fit(
-        frequencies, complex_numbers
-    )
+    fitted_complex_numbers, \
+        [phi_fit, m_fit, tau_fit, c1_fit, c2_fit, c3_fit], \
+        std_dev = perform_fit(
+            frequencies, complex_numbers
+        )
 
-    print("Fitted value of m/phi:", '{:.3e}'.format(m_fit),
+    print("Value of phi:", '{:.3e}'.format(phi_fit),
           "+/-", '{:.3e}'.format(std_dev[0]))
-    print("Fitted value of tau:", '{:.3e}'.format(tau_fit),
-          "femtoseconds +/-", '{:.3e}'.format(std_dev[1]), 'femtoseconds')
-    print("Fitted value of c1:", '{:.3e}'.format(c1_fit),
-          "+/-", '{:.3e}'.format(std_dev[2]))
+    print("Value of m:", '{:.3e}'.format(m_fit),
+          "+/-", '{:.3e}'.format(std_dev[1]))
+    print("Value of tau:", '{:.3e}'.format(tau_fit),
+          "femtoseconds +/-", '{:.3e}'.format(std_dev[2]), 'femtoseconds')
+    print("Value of c1:", '{:.3e}'.format(c1_fit),
+          "+/-", '{:.3e}'.format(std_dev[3]))
+    print("Value of c2:", '{:.3e}'.format(c2_fit),
+          "+/-", '{:.3e}'.format(std_dev[4]))
+    print("Value of c3:", '{:.3e}'.format(c3_fit),
+          "+/-", '{:.3e}'.format(std_dev[5]))
 
     plot_experimental_and_fitted_data(
         frequencies, complex_numbers, fitted_complex_numbers,
-        "m_fit/phi = %.3e, tau_fit = %.3e, c_fit = %.3e"
-        % (m_fit, tau_fit * 1E-15, c1_fit),
+        "phi = %.3e, m = %.3e, tau = %.3e,\nc1 = %.3e, c2 = %.3e, c3 = %.3e"
+        % (phi_fit, m_fit, tau_fit * 1E-15, c1_fit, c2_fit, c3_fit),
         image_filename
     )  # Convert to femtoseconds
 
     with open(txt_filename, 'w') as file:
-        file.writelines("# m/phi, std, tau(fs), std, c1, std\n")
         file.writelines(
-            "{:.3e}".format(m_fit) + ", " +
+            "# phi, std, m, std, tau(fs), std, c1, std, c2, std, c3, std\n"
+        )
+        file.writelines(
+            "{:.3e}".format(phi_fit) + ", " +
             "{:.3e}".format(std_dev[0]) + ", " +
-            "{:.3e}".format(tau_fit) + ", " +
+            "{:.3e}".format(m_fit) + ", " +
             "{:.3e}".format(std_dev[1]) + ", " +
+            "{:.3e}".format(tau_fit) + ", " +
+            "{:.3e}".format(std_dev[2]) + ", " +
             "{:.3e}".format(c1_fit) + ", " +
-            "{:.3e}".format(std_dev[2]) +
+            "{:.3e}".format(std_dev[3]) + ", " +
+            "{:.3e}".format(c2_fit) + ", " +
+            "{:.3e}".format(std_dev[4]) + ", " +
+            "{:.3e}".format(c3_fit) + ", " +
+            "{:.3e}".format(std_dev[5]) +
             "\n"
         )
