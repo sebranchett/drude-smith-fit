@@ -238,6 +238,15 @@ def plot_experimental_and_fitted_data(
     plt.show()
 
 
+def set_input_parameters(phi, m, tau, c1, c2, c3):
+    global input_parameters
+    input_parameters = [phi, m, tau, c1, c2, c3]
+    num_real_numbers = sum(
+        isinstance(param, float) for param in input_parameters
+    )
+    return num_real_numbers
+
+
 if __name__ == "__main__":
     global input_parameters
 
@@ -255,10 +264,10 @@ if __name__ == "__main__":
     if not isinstance(fix_phi, float) and not isinstance(fix_m, float):
         print("Error: phi and m cannot both be variable")
         sys.exit(1)
-    input_parameters = [fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3]
-    num_real_numbers = sum(
-        isinstance(param, float) for param in input_parameters
+    num_real_numbers = set_input_parameters(
+        fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3
     )
+
     if num_real_numbers != 3:
         print("Error: need exactly 3 variable parameters in this version,")
         print("found", num_real_numbers, "variable parameters")
