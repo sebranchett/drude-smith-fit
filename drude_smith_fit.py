@@ -305,10 +305,48 @@ def set_input_parameters(phi, m, tau, c1, c2, c3):
     return num_variable_params
 
 
+def print_fit_results(
+        phi_fit, m_fit, tau_fit, c1_fit, c2_fit, c3_fit, std_dev
+):
+    print("Value of phi:", '{:.3e}'.format(phi_fit), end=" ")
+    if not isinstance(input_parameters[0], float):
+        print("+/-", '{:.3e}'.format(std_dev[0]))
+    else:
+        print('fixed')
+    print("Value of m:", '{:.3e}'.format(m_fit), end=" ")
+    if not isinstance(input_parameters[1], float):
+        print("+/-", '{:.3e}'.format(std_dev[1]))
+    else:
+        print('fixed')
+    print("Value of tau:", '{:.3e}'.format(tau_fit), end=" ")
+    if not isinstance(input_parameters[2], float):
+        print("+/-", '{:.3e}'.format(std_dev[2]))
+    else:
+        print('fixed')
+    print("Value of c1:", '{:.3e}'.format(c1_fit), end=" ")
+    if not isinstance(input_parameters[3], float):
+        print("+/-", '{:.3e}'.format(std_dev[3]))
+    else:
+        print('fixed')
+    print("Value of c2:", '{:.3e}'.format(c2_fit), end=" ")
+    if not isinstance(input_parameters[4], float):
+        print("+/-", '{:.3e}'.format(std_dev[4]))
+    else:
+        print('fixed')
+    print("Value of c3:", '{:.3e}'.format(c3_fit), end=" ")
+    if not isinstance(input_parameters[5], float):
+        print("+/-", '{:.3e}'.format(std_dev[5]))
+    else:
+        print('fixed')
+
+
 if __name__ == "__main__":
     global input_parameters
 
     filename = "mobility.csv"
+    image_filename = filename.split('.')[0] + '.png'
+    txt_filename = filename.split('.')[0] + '.txt'
+
     min_frequency = 0.3E12
     max_frequency = 2.2E12
 
@@ -325,13 +363,10 @@ if __name__ == "__main__":
     num_variable_params = set_input_parameters(
         fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3
     )
-
     if num_variable_params < 1 or num_variable_params > 5:
         print("Error: only 1, 2, 3, 4 or 5 variable parameters allowed,")
         print("found", num_variable_params, "variable parameters")
         sys.exit(1)
-    image_filename = filename.split('.')[0] + '.png'
-    txt_filename = filename.split('.')[0] + '.txt'
 
     if len(sys.argv) > 1:
         if filename == "-h" or filename == "--help":
@@ -352,18 +387,7 @@ if __name__ == "__main__":
             frequencies, complex_numbers, num_variable_params
         )
 
-    print("Value of phi:", '{:.3e}'.format(phi_fit),
-          "+/-", '{:.3e}'.format(std_dev[0]))
-    print("Value of m:", '{:.3e}'.format(m_fit),
-          "+/-", '{:.3e}'.format(std_dev[1]))
-    print("Value of tau:", '{:.3e}'.format(tau_fit),
-          "femtoseconds +/-", '{:.3e}'.format(std_dev[2]), 'femtoseconds')
-    print("Value of c1:", '{:.3e}'.format(c1_fit),
-          "+/-", '{:.3e}'.format(std_dev[3]))
-    print("Value of c2:", '{:.3e}'.format(c2_fit),
-          "+/-", '{:.3e}'.format(std_dev[4]))
-    print("Value of c3:", '{:.3e}'.format(c3_fit),
-          "+/-", '{:.3e}'.format(std_dev[5]))
+    print_fit_results(phi_fit, m_fit, tau_fit, c1_fit, c2_fit, c3_fit, std_dev)
 
     plot_experimental_and_fitted_data(
         frequencies, complex_numbers, fitted_complex_numbers,
