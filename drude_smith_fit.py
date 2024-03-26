@@ -260,9 +260,24 @@ def perform_fit(frequencies, complex_numbers, num_variable_params):
     return [fitted_complex_numbers, params_fit, std_dev_fit]
 
 
+def write_csv(filename, frequencies, complex_numbers, fitted_complex_numbers):
+    data = np.column_stack((
+        frequencies,
+        np.imag(complex_numbers), np.real(complex_numbers),
+        np.imag(fitted_complex_numbers), np.real(fitted_complex_numbers)
+    ))
+    with open(filename, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow([
+            '# Frequencies', 'Experiment (Imag)', 'Experiment (Real)',
+            'Fitted (Imag)', 'Fitted (Real)'
+        ])
+        writer.writerows(data)
+
+
 def plot_experimental_and_fitted_data(
     frequencies, complex_numbers, fitted_complex_numbers, title,
-    output_filename
+    filename
 ):
     plt.scatter(
         frequencies,
@@ -292,7 +307,7 @@ def plot_experimental_and_fitted_data(
     plt.xlabel('Frequency')
     plt.ylabel('Real and Imaginary Parts')
     plt.title(title)
-    plt.savefig(output_filename)
+    plt.savefig(filename)
     plt.show()
 
 
@@ -340,12 +355,38 @@ def print_fit_results(
         print('fixed')
 
 
+def write_parameters(
+        filename, phi_fit, m_fit, tau_fit,
+        c1_fit, c2_fit, c3_fit, std_dev
+):
+    with open(filename, 'w') as file:
+        file.writelines(
+            "# phi, std, m, std, tau(fs), std, c1, std, c2, std, c3, std\n"
+        )
+        file.writelines(
+            "{:.3e}".format(phi_fit) + ", " +
+            "{:.3e}".format(std_dev[0]) + ", " +
+            "{:.3e}".format(m_fit) + ", " +
+            "{:.3e}".format(std_dev[1]) + ", " +
+            "{:.3e}".format(tau_fit) + ", " +
+            "{:.3e}".format(std_dev[2]) + ", " +
+            "{:.3e}".format(c1_fit) + ", " +
+            "{:.3e}".format(std_dev[3]) + ", " +
+            "{:.3e}".format(c2_fit) + ", " +
+            "{:.3e}".format(std_dev[4]) + ", " +
+            "{:.3e}".format(c3_fit) + ", " +
+            "{:.3e}".format(std_dev[5]) +
+            "\n"
+        )
+
+
 if __name__ == "__main__":
     global input_parameters
 
-    filename = "mobility.csv"
-    image_filename = filename.split('.')[0] + '.png'
-    txt_filename = filename.split('.')[0] + '.txt'
+    input_filename = "mobility.csv"
+    image_filename = input_filename.split('.')[0] + '.png'
+    param_filename = input_filename.split('.')[0] + '_param.csv'
+    data_filename = input_filename.split('.')[0] + '_fitted.csv'
 
     min_frequency = 0.3E12
     max_frequency = 2.2E12
@@ -369,7 +410,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     if len(sys.argv) > 1:
-        if filename == "-h" or filename == "--help":
+        if input_filename == "-h" or input_filename == "--help":
             print_help()
             sys.exit(0)
         if len(sys.argv) > 2:
@@ -378,7 +419,7 @@ if __name__ == "__main__":
                 max_frequency = float(sys.argv[3])
 
     frequencies, complex_numbers = read_csv(
-        filename, min_frequency, max_frequency
+        input_filename, min_frequency, max_frequency
     )
 
     fitted_complex_numbers, \
@@ -396,22 +437,12 @@ if __name__ == "__main__":
         image_filename
     )  # Convert to femtoseconds
 
-    with open(txt_filename, 'w') as file:
-        file.writelines(
-            "# phi, std, m, std, tau(fs), std, c1, std, c2, std, c3, std\n"
-        )
-        file.writelines(
-            "{:.3e}".format(phi_fit) + ", " +
-            "{:.3e}".format(std_dev[0]) + ", " +
-            "{:.3e}".format(m_fit) + ", " +
-            "{:.3e}".format(std_dev[1]) + ", " +
-            "{:.3e}".format(tau_fit) + ", " +
-            "{:.3e}".format(std_dev[2]) + ", " +
-            "{:.3e}".format(c1_fit) + ", " +
-            "{:.3e}".format(std_dev[3]) + ", " +
-            "{:.3e}".format(c2_fit) + ", " +
-            "{:.3e}".format(std_dev[4]) + ", " +
-            "{:.3e}".format(c3_fit) + ", " +
-            "{:.3e}".format(std_dev[5]) +
-            "\n"
-        )
+    write_parameters(
+        param_filename, phi_fit, m_fit, tau_fit,
+        c1_fit, c2_fit, c3_fit, std_dev
+    )
+
+    write_csv(
+        data_filename, frequencies, complex_numbers,
+        fitted_complex_numbers
+    )
