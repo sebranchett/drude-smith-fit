@@ -135,6 +135,18 @@ def fit_function(frequencies, fit_values):
     return stretched_results
 
 
+# The following 5 defs are needed because curve_fit requires a function with
+# the right number of parameters
+def fit_function_5(frequencies, fit01, fit02, fit03, fit04, fit05):
+    fit_values = [fit01, fit02, fit03, fit04, fit05]
+    return fit_function(frequencies, fit_values)
+
+
+def fit_function_4(frequencies, fit01, fit02, fit03, fit04):
+    fit_values = [fit01, fit02, fit03, fit04]
+    return fit_function(frequencies, fit_values)
+
+
 def fit_function_3(frequencies, fit01, fit02, fit03):
     fit_values = [fit01, fit02, fit03]
     return fit_function(frequencies, fit_values)
@@ -142,6 +154,11 @@ def fit_function_3(frequencies, fit01, fit02, fit03):
 
 def fit_function_2(frequencies, fit01, fit02):
     fit_values = [fit01, fit02]
+    return fit_function(frequencies, fit_values)
+
+
+def fit_function_1(frequencies, fit01):
+    fit_values = [fit01]
     return fit_function(frequencies, fit_values)
 
 
@@ -210,6 +227,16 @@ def perform_fit(frequencies, complex_numbers, num_variable_params):
         fitted_stretched_complex_numbers = fit_function_2(
             frequencies, params[0], params[1]
         )
+    elif num_variable_params == 1:
+        params, pcov = curve_fit(
+            fit_function_1, frequencies, stretched_complex_numbers,
+            bounds=(minima, maxima)
+        )
+
+        # Use the fitted parameters to calculate the fitted complex numbers
+        fitted_stretched_complex_numbers = fit_function_1(
+            frequencies, params[0]
+        )
 
     fitted_complex_numbers = \
         fitted_stretched_complex_numbers[:len(frequencies)] + \
@@ -275,9 +302,9 @@ if __name__ == "__main__":
     max_frequency = 2.2E12
 
     fix_phi = 1.0
-    fix_m = False
+    fix_m = .492
     fix_tau = False
-    fix_c1 = False
+    fix_c1 = -0.7536
     fix_c2 = 0.
     fix_c3 = 0.
 
@@ -288,8 +315,8 @@ if __name__ == "__main__":
         fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3
     )
 
-    if num_variable_params != 3 and num_variable_params != 2:
-        print("Error: need either 2 or 3 variable parameters in this version,")
+    if num_variable_params < 1 or num_variable_params > 5:
+        print("Error: only 1, 2, 3, 4 or 5 variable parameters allowed,")
         print("found", num_variable_params, "variable parameters")
         sys.exit(1)
     image_filename = filename.split('.')[0] + '.png'
