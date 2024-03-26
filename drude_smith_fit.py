@@ -206,14 +206,29 @@ def perform_fit(frequencies, complex_numbers, num_variable_params):
         (np.real(complex_numbers), np.imag(complex_numbers))
     )
 
-    # Perform the fit
-    if num_variable_params == 3:
+    # Perform the fit (curve_fit requires separate functions for
+    # different numbers of parameters)
+    if num_variable_params == 5:
+        params, pcov = curve_fit(
+            fit_function_5, frequencies, stretched_complex_numbers,
+            bounds=(minima, maxima)
+        )
+        fitted_stretched_complex_numbers = fit_function_5(
+            frequencies, params[0], params[1], params[2], params[3], params[4]
+        )
+    elif num_variable_params == 4:
+        params, pcov = curve_fit(
+            fit_function_4, frequencies, stretched_complex_numbers,
+            bounds=(minima, maxima)
+        )
+        fitted_stretched_complex_numbers = fit_function_4(
+            frequencies, params[0], params[1], params[2], params[3]
+        )
+    elif num_variable_params == 3:
         params, pcov = curve_fit(
             fit_function_3, frequencies, stretched_complex_numbers,
             bounds=(minima, maxima)
         )
-
-        # Use the fitted parameters to calculate the fitted complex numbers
         fitted_stretched_complex_numbers = fit_function_3(
             frequencies, params[0], params[1], params[2]
         )
@@ -222,8 +237,6 @@ def perform_fit(frequencies, complex_numbers, num_variable_params):
             fit_function_2, frequencies, stretched_complex_numbers,
             bounds=(minima, maxima)
         )
-
-        # Use the fitted parameters to calculate the fitted complex numbers
         fitted_stretched_complex_numbers = fit_function_2(
             frequencies, params[0], params[1]
         )
@@ -232,8 +245,6 @@ def perform_fit(frequencies, complex_numbers, num_variable_params):
             fit_function_1, frequencies, stretched_complex_numbers,
             bounds=(minima, maxima)
         )
-
-        # Use the fitted parameters to calculate the fitted complex numbers
         fitted_stretched_complex_numbers = fit_function_1(
             frequencies, params[0]
         )
@@ -301,10 +312,10 @@ if __name__ == "__main__":
     min_frequency = 0.3E12
     max_frequency = 2.2E12
 
-    fix_phi = 1.0
-    fix_m = .492
+    fix_phi = 1.
+    fix_m = False
     fix_tau = False
-    fix_c1 = -0.7536
+    fix_c1 = False
     fix_c2 = 0.
     fix_c3 = 0.
 
