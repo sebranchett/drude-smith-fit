@@ -126,17 +126,26 @@ def arrange_parameters(fit_values, std_dev=False):
     return [phi, m, tau, c1, c2, c3]
 
 
-def fit_function_3(frequencies, fit01, fit02, fit03):
+def fit_function(frequencies, fit_values):
     # To get the fit to work, curve_fit needs to work in seconds,
     # but the Drude-Smith model uses femtoseconds
-    fit_values = [fit01, fit02, fit03]
     phi, m, tau, c1, c2, c3 = arrange_parameters(fit_values)
     results = drude_smith_c3(frequencies, phi, m, tau * 1E-15, c1, c2, c3)
     stretched_results = np.concatenate((np.real(results), np.imag(results)))
     return stretched_results
 
 
-def perform_fit(frequencies, complex_numbers):
+def fit_function_3(frequencies, fit01, fit02, fit03):
+    fit_values = [fit01, fit02, fit03]
+    return fit_function(frequencies, fit_values)
+
+
+def fit_function_2(frequencies, fit01, fit02):
+    fit_values = [fit01, fit02]
+    return fit_function(frequencies, fit_values)
+
+
+def perform_fit(frequencies, complex_numbers, num_variable_params):
     global input_parameters
     # Set some physics boundaries
     min_phi = 0.
@@ -181,15 +190,26 @@ def perform_fit(frequencies, complex_numbers):
     )
 
     # Perform the fit
-    params, pcov = curve_fit(
-        fit_function_3, frequencies, stretched_complex_numbers,
-        bounds=(minima, maxima)
-    )
+    if num_variable_params == 3:
+        params, pcov = curve_fit(
+            fit_function_3, frequencies, stretched_complex_numbers,
+            bounds=(minima, maxima)
+        )
 
-    # Use the fitted parameters to calculate the fitted complex numbers
-    fitted_stretched_complex_numbers = fit_function_3(
-        frequencies, params[0], params[1], params[2]
-    )
+        # Use the fitted parameters to calculate the fitted complex numbers
+        fitted_stretched_complex_numbers = fit_function_3(
+            frequencies, params[0], params[1], params[2]
+        )
+    elif num_variable_params == 2:
+        params, pcov = curve_fit(
+            fit_function_2, frequencies, stretched_complex_numbers,
+            bounds=(minima, maxima)
+        )
+
+        # Use the fitted parameters to calculate the fitted complex numbers
+        fitted_stretched_complex_numbers = fit_function_2(
+            frequencies, params[0], params[1]
+        )
 
     fitted_complex_numbers = \
         fitted_stretched_complex_numbers[:len(frequencies)] + \
@@ -241,10 +261,10 @@ def plot_experimental_and_fitted_data(
 def set_input_parameters(phi, m, tau, c1, c2, c3):
     global input_parameters
     input_parameters = [phi, m, tau, c1, c2, c3]
-    num_real_numbers = sum(
-        isinstance(param, float) for param in input_parameters
+    num_variable_params = sum(
+        not isinstance(param, float) for param in input_parameters
     )
-    return num_real_numbers
+    return num_variable_params
 
 
 if __name__ == "__main__":
@@ -264,13 +284,13 @@ if __name__ == "__main__":
     if not isinstance(fix_phi, float) and not isinstance(fix_m, float):
         print("Error: phi and m cannot both be variable")
         sys.exit(1)
-    num_real_numbers = set_input_parameters(
+    num_variable_params = set_input_parameters(
         fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3
     )
 
-    if num_real_numbers != 3:
-        print("Error: need exactly 3 variable parameters in this version,")
-        print("found", num_real_numbers, "variable parameters")
+    if num_variable_params != 3 and num_variable_params != 2:
+        print("Error: need either 2 or 3 variable parameters in this version,")
+        print("found", num_variable_params, "variable parameters")
         sys.exit(1)
     image_filename = filename.split('.')[0] + '.png'
     txt_filename = filename.split('.')[0] + '.txt'
@@ -291,7 +311,7 @@ if __name__ == "__main__":
     fitted_complex_numbers, \
         [phi_fit, m_fit, tau_fit, c1_fit, c2_fit, c3_fit], \
         std_dev = perform_fit(
-            frequencies, complex_numbers
+            frequencies, complex_numbers, num_variable_params
         )
 
     print("Value of phi:", '{:.3e}'.format(phi_fit),
