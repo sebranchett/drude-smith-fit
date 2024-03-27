@@ -59,16 +59,19 @@ def read_csv(filename, min_frequency, max_frequency):
 
 def drude_smith_c3(frequencies, phi, m, tau, c1, c2=0., c3=0.):
     # Calculate the Drude-Smith mobility with 3 c coefficients
+    # interpret tau as if it is in fs, this helps the fit to converge
     e = 1.602E-19
     m0 = 9.109E-31
     conversion = 10000.  # input is in cm^2
+    two_pi_freq_tau = 2. * np.pi * frequencies * tau
+    two_pi_freq_tau = two_pi_freq_tau * 1E-15  # convert tau from fs to s
 
     mstar = m * m0
-    f1 = conversion * phi * e * tau / mstar
-    f2 = 1 / (1 - 1j * 2 * np.pi * frequencies * tau)
-    f3 = 1 + (c1 / (1 - 1j * 2 * np.pi * frequencies * tau)) + \
-             (c2 / (1 - 1j * 2 * np.pi * frequencies * tau) ** 2) + \
-             (c3 / (1 - 1j * 2 * np.pi * frequencies * tau) ** 3)
+    f1 = conversion * phi * e * tau * 1E-15 / mstar  # convert tau from fs to s
+    f2 = 1 / (1 - 1j * two_pi_freq_tau)
+    f3 = 1 + (c1 / (1 - 1j * two_pi_freq_tau)) + \
+             (c2 / (1 - 1j * two_pi_freq_tau) ** 2) + \
+             (c3 / (1 - 1j * two_pi_freq_tau) ** 3)
     complex_argument = f1 * f2 * f3
     return complex_argument
 
@@ -127,10 +130,8 @@ def arrange_parameters(fit_values, std_dev=False):
 
 
 def fit_function(frequencies, fit_values):
-    # To get the fit to work, curve_fit needs to work in seconds,
-    # but the Drude-Smith model uses femtoseconds
     phi, m, tau, c1, c2, c3 = arrange_parameters(fit_values)
-    results = drude_smith_c3(frequencies, phi, m, tau * 1E-15, c1, c2, c3)
+    results = drude_smith_c3(frequencies, phi, m, tau, c1, c2, c3)
     stretched_results = np.concatenate((np.real(results), np.imag(results)))
     return stretched_results
 
@@ -167,8 +168,8 @@ def perform_fit(frequencies, complex_numbers, num_variable_params):
     # Set some physics boundaries
     min_phi = 0.
     max_phi = 1.
-    min_m = 0.  # this helps the fit to converge
-    max_m = 10.  # this helps the fit to converge
+    min_m = 0.
+    max_m = np.inf
     min_tau = 0.
     max_tau = np.inf
     min_c1 = -1.
@@ -361,7 +362,7 @@ def write_parameters(
 ):
     with open(filename, 'w') as file:
         file.writelines(
-            "# phi, std, m, std, tau(fs), std, c1, std, c2, std, c3, std\n"
+            "# phi, std, m, std, tau, std, c1, std, c2, std, c3, std\n"
         )
         file.writelines(
             "{:.3e}".format(phi_fit) + ", " +
@@ -438,14 +439,17 @@ if __name__ == "__main__":
             frequencies, complex_numbers, num_variable_params
         )
 
+    tau_fit = tau_fit * 1E-15  # convert tau_fit from fs to s
+    std_dev[2] = std_dev[2] * 1E-15  # convert tau_fit std-dev from fs to s
+
     print_fit_results(phi_fit, m_fit, tau_fit, c1_fit, c2_fit, c3_fit, std_dev)
 
     plot_experimental_and_fitted_data(
         frequencies, complex_numbers, fitted_complex_numbers,
         "phi = %.3e, m = %.3e, tau = %.3e,\nc1 = %.3e, c2 = %.3e, c3 = %.3e"
-        % (phi_fit, m_fit, tau_fit * 1E-15, c1_fit, c2_fit, c3_fit),
+        % (phi_fit, m_fit, tau_fit, c1_fit, c2_fit, c3_fit),
         image_filename
-    )  # Convert to femtoseconds
+    )
 
     write_parameters(
         param_filename, phi_fit, m_fit, tau_fit,
