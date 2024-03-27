@@ -10,6 +10,5 @@ See Figure 3 and Equation 3 in this paper: https://www.nature.com/articles/ncomm
 * m_fit is $m$ where $m^* = m * m0$
 
 ## More things to note
-* Fit doesn't work well for parameters of very different orders of magnitude, so 'optimize' works with Femtoseconds and Drude-Smith works with seconds (there is a conversion)
+* Fit doesn't work well for parameters of very different orders of magnitude, so 'optimize' works with Femtoseconds and Drude-Smith converts to seconds
 * 'Optimize' can only work with real numbers, so it works with an array containing first the real parts of the experimental points and then the imaginary parts (there is a conversion)
-* Needed to restrict $m$ to be between 0. and 10. for more reliable fitting
