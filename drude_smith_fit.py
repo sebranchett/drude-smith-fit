@@ -380,13 +380,24 @@ def write_parameters(
         )
 
 
+def check_input_parameters(fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3):
+    if not isinstance(fix_phi, float) and not isinstance(fix_m, float):
+        print("Error: phi and m cannot both be variable")
+        sys.exit(1)
+    num_variable_params = set_input_parameters(
+        fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3
+    )
+    if num_variable_params < 1 or num_variable_params > 5:
+        print("Error: only 1, 2, 3, 4 or 5 variable parameters allowed,")
+        print("found", num_variable_params, "variable parameters")
+        sys.exit(1)
+    return num_variable_params
+
+
 if __name__ == "__main__":
     global input_parameters
 
     input_filename = "mobility.csv"
-    image_filename = input_filename.split('.')[0] + '.png'
-    param_filename = input_filename.split('.')[0] + '_param.csv'
-    data_filename = input_filename.split('.')[0] + '_fitted.csv'
 
     min_frequency = 0.3E12
     max_frequency = 2.2E12
@@ -398,18 +409,13 @@ if __name__ == "__main__":
     fix_c2 = 0.
     fix_c3 = 0.
 
-    if not isinstance(fix_phi, float) and not isinstance(fix_m, float):
-        print("Error: phi and m cannot both be variable")
-        sys.exit(1)
-    num_variable_params = set_input_parameters(
+    num_variable_params = check_input_parameters(
         fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3
     )
-    if num_variable_params < 1 or num_variable_params > 5:
-        print("Error: only 1, 2, 3, 4 or 5 variable parameters allowed,")
-        print("found", num_variable_params, "variable parameters")
-        sys.exit(1)
 
     if len(sys.argv) > 1:
+        print('input_filename:', input_filename)
+        input_filename = sys.argv[1]
         if input_filename == "-h" or input_filename == "--help":
             print_help()
             sys.exit(0)
@@ -417,6 +423,10 @@ if __name__ == "__main__":
             min_frequency = float(sys.argv[2])
             if len(sys.argv) > 3:
                 max_frequency = float(sys.argv[3])
+
+    image_filename = input_filename.split('.')[0] + '.png'
+    param_filename = input_filename.split('.')[0] + '_param.csv'
+    data_filename = input_filename.split('.')[0] + '_fitted.csv'
 
     frequencies, complex_numbers = read_csv(
         input_filename, min_frequency, max_frequency
