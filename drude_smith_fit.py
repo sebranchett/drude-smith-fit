@@ -63,11 +63,11 @@ def drude_smith_c3(frequencies, phi, m, tau, c1, c2=0., c3=0.):
     e = 1.602E-19
     m0 = 9.109E-31
     conversion = 10000.  # input is in cm^2
+    tau = tau * 1E-15  # convert tau from fs to s
     two_pi_freq_tau = 2. * np.pi * frequencies * tau
-    two_pi_freq_tau = two_pi_freq_tau * 1E-15  # convert tau from fs to s
 
     mstar = m * m0
-    f1 = conversion * phi * e * tau * 1E-15 / mstar  # convert tau from fs to s
+    f1 = conversion * phi * e * tau / mstar
     f2 = 1 / (1 - 1j * two_pi_freq_tau)
     f3 = 1 + (c1 / (1 - 1j * two_pi_freq_tau)) + \
              (c2 / (1 - 1j * two_pi_freq_tau) ** 2) + \

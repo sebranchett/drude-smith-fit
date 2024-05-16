@@ -80,13 +80,13 @@ class DrudeSmithFitTestCase(unittest.TestCase):
             fitted_complex_numbers, expected_result
         )
         expected_result = np.array([
-            1., 12.365495, 50.029188, -0.31461, 0., 0.0
+            1., 12.365495, 50.029175, -0.31461, 0., 0.0
         ])
         np.testing.assert_array_almost_equal(
             params_fit, expected_result
         )
         expected_result = np.array([
-            0., 8.801072, 92.359791,  1.231787, 0., 0.0
+            0., 8.801074, 92.359832,  1.231788, 0., 0.0
         ])
         np.testing.assert_array_almost_equal(
             std_dev_fit, expected_result
