@@ -57,7 +57,9 @@ def read_csv(filename, min_frequency, max_frequency):
     return np.array(frequencies), np.array(complex_numbers)
 
 
-def drude_smith_c3(frequencies, phi, m, tau, c1, c2=0., c3=0.):
+def drude_smith_c3(
+    frequencies, phi, m, tau, c1, c2=0., c3=0., fbn=0., wbn=0., gamma=0.
+):
     # Calculate the Drude-Smith mobility with 3 c coefficients
     # interpret tau as if it is in fs, this helps the fit to converge
     e = 1.602E-19
@@ -73,6 +75,13 @@ def drude_smith_c3(frequencies, phi, m, tau, c1, c2=0., c3=0.):
              (c2 / (1 - 1j * two_pi_freq_tau) ** 2) + \
              (c3 / (1 - 1j * two_pi_freq_tau) ** 3)
     complex_argument = f1 * f2 * f3
+
+    # Include the EX response which originates from transitions from
+    # lowest exciton state to higher states.
+    # This is described in equation (4) of Nanoscale, 2019, 11, p. 21571
+    ex = (e/(1j * mstar)) * (fbn * two_pi_freq_tau) / \
+        (wbn**2 - two_pi_freq_tau**2 + (1j * two_pi_freq_tau * gamma))
+    complex_argument += ex
     return complex_argument
 
 
@@ -126,18 +135,64 @@ def arrange_parameters(fit_values, std_dev=False):
             c3 = input_parameters[5]
     else:
         c3 = fit_values[index]
-    return [phi, m, tau, c1, c2, c3]
+        index += 1
+    if isinstance(input_parameters[6], float):
+        if std_dev:
+            fbn = 0.
+        else:
+            fbn = input_parameters[6]
+    else:
+        fbn = fit_values[index]
+        index += 1
+    if isinstance(input_parameters[7], float):
+        if std_dev:
+            wbn = 0.
+        else:
+            wbn = input_parameters[7]
+    else:
+        wbn = fit_values[index]
+        index += 1
+    if isinstance(input_parameters[8], float):
+        if std_dev:
+            gamma = 0.
+        else:
+            gamma = input_parameters[8]
+    else:
+        gamma = fit_values[index]
+        index += 1
+    return [phi, m, tau, c1, c2, c3, fbn, wbn, gamma]
 
 
 def fit_function(frequencies, fit_values):
-    phi, m, tau, c1, c2, c3 = arrange_parameters(fit_values)
-    results = drude_smith_c3(frequencies, phi, m, tau, c1, c2, c3)
+    phi, m, tau, c1, c2, c3, fbn, wbn, gamma = arrange_parameters(fit_values)
+    results = drude_smith_c3(
+        frequencies, phi, m, tau, c1, c2, c3, fbn, wbn, gamma
+    )
     stretched_results = np.concatenate((np.real(results), np.imag(results)))
     return stretched_results
 
 
-# The following 5 defs are needed because curve_fit requires a function with
+# The following 8 defs are needed because curve_fit requires a function with
 # the right number of parameters
+def fit_function_8(
+    frequencies, fit01, fit02, fit03, fit04, fit05, fit06, fit07, fit08
+):
+    fit_values = [fit01, fit02, fit03, fit04, fit05, fit06, fit07, fit08]
+    return fit_function(frequencies, fit_values)
+
+
+def fit_function_7(
+    frequencies, fit01, fit02, fit03, fit04, fit05, fit06, fit07
+):
+    fit_values = [fit01, fit02, fit03, fit04, fit05, fit06, fit07]
+    return fit_function(frequencies, fit_values)
+
+
+def fit_function_6(frequencies, fit01, fit02, fit03, fit04, fit05, fit06):
+    fit_values = [fit01, fit02, fit03, fit04, fit05, fit06]
+    return fit_function(frequencies, fit_values)
+
+
 def fit_function_5(frequencies, fit01, fit02, fit03, fit04, fit05):
     fit_values = [fit01, fit02, fit03, fit04, fit05]
     return fit_function(frequencies, fit_values)
@@ -178,6 +233,12 @@ def perform_fit(frequencies, complex_numbers, num_variable_params):
     max_c2 = 1.
     min_c3 = -1.
     max_c3 = 1.
+    min_fbn = 0.
+    max_fbn = np.inf
+    min_wbn = 0.
+    max_wbn = np.inf
+    min_gamma = 0.
+    max_gamma = np.inf
 
     minima = []
     maxima = []
@@ -200,6 +261,15 @@ def perform_fit(frequencies, complex_numbers, num_variable_params):
     if not isinstance(input_parameters[5], float):
         minima.append(min_c3)
         maxima.append(max_c3)
+    if not isinstance(input_parameters[6], float):
+        minima.append(min_fbn)
+        maxima.append(max_fbn)
+    if not isinstance(input_parameters[7], float):
+        minima.append(min_wbn)
+        maxima.append(max_wbn)
+    if not isinstance(input_parameters[8], float):
+        minima.append(min_gamma)
+        maxima.append(max_gamma)
 
     # To fit both the real and imaginary parts of the complex numbers
     # create a 'stretched' array
@@ -209,7 +279,34 @@ def perform_fit(frequencies, complex_numbers, num_variable_params):
 
     # Perform the fit (curve_fit requires separate functions for
     # different numbers of parameters)
-    if num_variable_params == 5:
+    if num_variable_params == 8:
+        params, pcov = curve_fit(
+            fit_function_8, frequencies, stretched_complex_numbers,
+            bounds=(minima, maxima)
+        )
+        fitted_stretched_complex_numbers = fit_function_8(
+            frequencies, params[0], params[1], params[2], params[3],
+            params[4], params[5], params[6], params[7]
+        )
+    elif num_variable_params == 7:
+        params, pcov = curve_fit(
+            fit_function_7, frequencies, stretched_complex_numbers,
+            bounds=(minima, maxima)
+        )
+        fitted_stretched_complex_numbers = fit_function_7(
+            frequencies, params[0], params[1], params[2], params[3],
+            params[4], params[5], params[6]
+        )
+    elif num_variable_params == 6:
+        params, pcov = curve_fit(
+            fit_function_6, frequencies, stretched_complex_numbers,
+            bounds=(minima, maxima)
+        )
+        fitted_stretched_complex_numbers = fit_function_6(
+            frequencies, params[0], params[1], params[2], params[3],
+            params[4], params[5]
+        )
+    elif num_variable_params == 5:
         params, pcov = curve_fit(
             fit_function_5, frequencies, stretched_complex_numbers,
             bounds=(minima, maxima)
@@ -312,9 +409,9 @@ def plot_experimental_and_fitted_data(
     plt.show()
 
 
-def set_input_parameters(phi, m, tau, c1, c2, c3):
+def set_input_parameters(phi, m, tau, c1, c2, c3, fbn, wbn, gamma):
     global input_parameters
-    input_parameters = [phi, m, tau, c1, c2, c3]
+    input_parameters = [phi, m, tau, c1, c2, c3, fbn, wbn, gamma]
     num_variable_params = sum(
         not isinstance(param, float) for param in input_parameters
     )
@@ -322,7 +419,8 @@ def set_input_parameters(phi, m, tau, c1, c2, c3):
 
 
 def print_fit_results(
-        phi_fit, m_fit, tau_fit, c1_fit, c2_fit, c3_fit, std_dev
+        phi_fit, m_fit, tau_fit, c1_fit, c2_fit, c3_fit,
+        fbn_fit, wbn_fit, gamma_fit, std_dev
 ):
     print("Value of phi:", '{:.3e}'.format(phi_fit), end=" ")
     if not isinstance(input_parameters[0], float):
@@ -354,16 +452,33 @@ def print_fit_results(
         print("+/-", '{:.3e}'.format(std_dev[5]))
     else:
         print('fixed')
+    print("Value of fbn:", '{:.3e}'.format(fbn_fit), end=" ")
+    if not isinstance(input_parameters[6], float):
+        print("+/-", '{:.3e}'.format(std_dev[6]))
+    else:
+        print('fixed')
+    print("Value of wbn:", '{:.3e}'.format(wbn_fit), end=" ")
+    if not isinstance(input_parameters[7], float):
+        print("+/-", '{:.3e}'.format(std_dev[7]))
+    else:
+        print('fixed')
+    print("Value of gamma:", '{:.3e}'.format(gamma_fit), end=" ")
+    if not isinstance(input_parameters[8], float):
+        print("+/-", '{:.3e}'.format(std_dev[8]))
+    else:
+        print('fixed')
 
 
 def write_parameters(
         filename, phi_fit, m_fit, tau_fit,
-        c1_fit, c2_fit, c3_fit, std_dev
+        c1_fit, c2_fit, c3_fit, fbn_fit, wbn_fit, gamma_fit, std_dev
 ):
+    header = (
+        "# phi, std, m, std, tau, std, c1, std, c2, std, c3, std, "
+        "fbn, std, wbn, std, gamma, std\n"
+    )
     with open(filename, 'w') as file:
-        file.writelines(
-            "# phi, std, m, std, tau, std, c1, std, c2, std, c3, std\n"
-        )
+        file.writelines(header)
         file.writelines(
             "{:.3e}".format(phi_fit) + ", " +
             "{:.3e}".format(std_dev[0]) + ", " +
@@ -377,20 +492,30 @@ def write_parameters(
             "{:.3e}".format(std_dev[4]) + ", " +
             "{:.3e}".format(c3_fit) + ", " +
             "{:.3e}".format(std_dev[5]) +
+            "{:.3e}".format(fbn_fit) + ", " +
+            "{:.3e}".format(std_dev[6]) + ", " +
+            "{:.3e}".format(wbn_fit) + ", " +
+            "{:.3e}".format(std_dev[7]) + ", " +
+            "{:.3e}".format(gamma_fit) + ", " +
+            "{:.3e}".format(std_dev[8]) +
             "\n"
         )
 
 
-def check_input_parameters(fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3):
+def check_input_parameters(
+    fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3,
+    fix_fbn, fix_wbn, fix_gamma
+):
     if not isinstance(fix_phi, float) and not isinstance(fix_m, float):
         print("Error: phi and m cannot both be variable")
         sys.exit(1)
     num_variable_params = set_input_parameters(
-        fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3
+        fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3,
+        fix_fbn, fix_wbn, fix_gamma
     )
-    if num_variable_params < 1 or num_variable_params > 5:
-        print("Error: only 1, 2, 3, 4 or 5 variable parameters allowed,")
-        print("found", num_variable_params, "variable parameters")
+    if num_variable_params < 1 or num_variable_params > 8:
+        print("Error: only 1, 2, 3, 4, 5, 6, 7 or 8 variable parameters,")
+        print("allowed, found", num_variable_params, "variable parameters")
         sys.exit(1)
     return num_variable_params
 
@@ -409,9 +534,13 @@ if __name__ == "__main__":
     fix_c1 = False
     fix_c2 = 0.
     fix_c3 = 0.
+    fix_fbn = 0.
+    fix_wbn = 0.
+    fix_gamma = 0.
 
     num_variable_params = check_input_parameters(
-        fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3
+        fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3,
+        fix_fbn, fix_wbn, fix_gamma
     )
 
     if len(sys.argv) > 1:
@@ -434,7 +563,8 @@ if __name__ == "__main__":
     )
 
     fitted_complex_numbers, \
-        [phi_fit, m_fit, tau_fit, c1_fit, c2_fit, c3_fit], \
+        [phi_fit, m_fit, tau_fit, c1_fit, c2_fit, c3_fit,
+         fbn_fit, wbn_fit, gamma_fit], \
         std_dev = perform_fit(
             frequencies, complex_numbers, num_variable_params
         )
@@ -442,18 +572,24 @@ if __name__ == "__main__":
     tau_fit = tau_fit * 1E-15  # convert tau_fit from fs to s
     std_dev[2] = std_dev[2] * 1E-15  # convert tau_fit std-dev from fs to s
 
-    print_fit_results(phi_fit, m_fit, tau_fit, c1_fit, c2_fit, c3_fit, std_dev)
+    print_fit_results(
+        phi_fit, m_fit, tau_fit, c1_fit, c2_fit, c3_fit,
+        fbn_fit, wbn_fit, gamma_fit, std_dev)
 
+    title = ("phi = %.3e, m = %.3e, tau = %.3e,\n"
+             "c1 = %.3e, c2 = %.3e, c3 = %.3e,\n"
+             "fbn = %.3e, wbn = %.3e, gamma = %.3e")
     plot_experimental_and_fitted_data(
         frequencies, complex_numbers, fitted_complex_numbers,
-        "phi = %.3e, m = %.3e, tau = %.3e,\nc1 = %.3e, c2 = %.3e, c3 = %.3e"
-        % (phi_fit, m_fit, tau_fit, c1_fit, c2_fit, c3_fit),
+        title
+        % (phi_fit, m_fit, tau_fit, c1_fit, c2_fit, c3_fit,
+           fbn_fit, wbn_fit, gamma_fit),
         image_filename
     )
 
     write_parameters(
         param_filename, phi_fit, m_fit, tau_fit,
-        c1_fit, c2_fit, c3_fit, std_dev
+        c1_fit, c2_fit, c3_fit, fbn_fit, wbn_fit, gamma_fit, std_dev
     )
 
     write_csv(
