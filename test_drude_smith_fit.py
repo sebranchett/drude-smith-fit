@@ -6,7 +6,7 @@ from drude_smith_fit import set_input_parameters, fit_function
 
 
 class DrudeSmithFitTestCase(unittest.TestCase):
-    set_input_parameters(1., False, False, False, 0., 0.)
+    set_input_parameters(1., False, False, False, 0., 0., 0., 0., 0.)
 
     def test_read_csv(self):
         frequencies, complex_numbers = read_csv(
@@ -25,18 +25,24 @@ class DrudeSmithFitTestCase(unittest.TestCase):
         c1 = 4.0
         c2 = 5.0
         c3 = 6.0
+        fbn = 0.0
+        wbn = 0.0
+        gamma = 0.0
         expected_result = np.array([
             42.112363 + 2.383551j, 41.824256 + 4.747365j,
             41.348111 + 7.072056j, 40.689876 + 9.338918j,
             39.857688 + 11.530251j
         ])
-        result = drude_smith_c3(frequencies, phi, m, tau, c1, c2, c3)
+        result = drude_smith_c3(
+            frequencies, phi, m, tau, c1, c2, c3,
+            fbn, wbn, gamma
+        )
         np.testing.assert_array_almost_equal(result, expected_result)
 
     def test_arrange_parameters_with_std_dev_false(self):
         fit_values = [11.0, 22.0, 33.0]
         expected_result = [
-            1., 11., 22., 33., 0., 0.,
+            1., 11., 22., 33., 0., 0., 0., 0., 0.,
         ]
         result = arrange_parameters(fit_values, std_dev=False)
         self.assertEqual(result, expected_result)
@@ -44,7 +50,7 @@ class DrudeSmithFitTestCase(unittest.TestCase):
     def test_arrange_parameters_with_std_dev_true(self):
         fit_values = [11.0, 22.0, 33.0]
         expected_result = [
-            0., 11., 22., 33., 0., 0.,
+            0., 11., 22., 33., 0., 0., 0., 0., 0.,
         ]
         result = arrange_parameters(fit_values, std_dev=True)
         self.assertEqual(result, expected_result)
@@ -70,8 +76,8 @@ class DrudeSmithFitTestCase(unittest.TestCase):
         self.assertIsInstance(params_fit, list)
         self.assertIsInstance(std_dev_fit, list)
         self.assertEqual(len(fitted_complex_numbers), len(frequencies))
-        self.assertEqual(len(params_fit), 6)
-        self.assertEqual(len(std_dev_fit), 6)
+        self.assertEqual(len(params_fit), 9)
+        self.assertEqual(len(std_dev_fit), 9)
         expected_result = np.array([
             4.804727+0.869923j, 4.404369+1.760269j, 3.696767+2.368778j,
             2.952127+2.621344j, 2.323706+2.638324j
@@ -80,13 +86,13 @@ class DrudeSmithFitTestCase(unittest.TestCase):
             fitted_complex_numbers, expected_result
         )
         expected_result = np.array([
-            1., 12.365495, 50.029175, -0.31461, 0., 0.0
+            1., 12.365495, 50.029175, -0.31461, 0., 0., 0., 0., 0.
         ])
         np.testing.assert_array_almost_equal(
             params_fit, expected_result
         )
         expected_result = np.array([
-            0., 8.801074, 92.359832,  1.231788, 0., 0.0
+            0., 8.801074, 92.359832,  1.231788, 0., 0., 0., 0., 0.
         ])
         np.testing.assert_array_almost_equal(
             std_dev_fit, expected_result

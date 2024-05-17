@@ -76,11 +76,12 @@ def drude_smith_c3(
              (c3 / (1 - 1j * two_pi_freq_tau) ** 3)
     complex_argument = f1 * f2 * f3
 
-    # Include the EX response which originates from transitions from
+    # Include the exciton response which originates from transitions from
     # lowest exciton state to higher states.
     # This is described in equation (4) of Nanoscale, 2019, 11, p. 21571
+    # with n = 1
     ex = (e/(1j * mstar)) * (fbn * two_pi_freq_tau) / \
-        (wbn**2 - two_pi_freq_tau**2 + (1j * two_pi_freq_tau * gamma))
+        (wbn**2 - two_pi_freq_tau**2 - (1j * two_pi_freq_tau * gamma))
     complex_argument += ex
     return complex_argument
 
