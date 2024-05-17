@@ -66,22 +66,23 @@ def drude_smith_c3(
     m0 = 9.109E-31
     conversion = 10000.  # input is in cm^2
     tau = tau * 1E-15  # convert tau from fs to s
-    two_pi_freq_tau = 2. * np.pi * frequencies * tau
+    w = 2. * np.pi * frequencies
+    w_tau = w * tau
 
     mstar = m * m0
     f1 = conversion * phi * e * tau / mstar
-    f2 = 1 / (1 - 1j * two_pi_freq_tau)
-    f3 = 1 + (c1 / (1 - 1j * two_pi_freq_tau)) + \
-             (c2 / (1 - 1j * two_pi_freq_tau) ** 2) + \
-             (c3 / (1 - 1j * two_pi_freq_tau) ** 3)
+    f2 = 1 / (1 - 1j * w_tau)
+    f3 = 1 + (c1 / (1 - 1j * w_tau)) + \
+             (c2 / (1 - 1j * w_tau) ** 2) + \
+             (c3 / (1 - 1j * w_tau) ** 3)
     complex_argument = f1 * f2 * f3
 
     # Include the exciton response which originates from transitions from
     # lowest exciton state to higher states.
     # This is described in equation (4) of Nanoscale, 2019, 11, p. 21571
     # with n = 1
-    ex = (e/(1j * mstar)) * (fbn * two_pi_freq_tau) / \
-        (wbn**2 - two_pi_freq_tau**2 - (1j * two_pi_freq_tau * gamma))
+    ex = (e/(1j * mstar)) * (fbn * w) / \
+        (wbn**2 - w**2 - (1j * w * gamma))
     complex_argument += ex
     return complex_argument
 
@@ -518,6 +519,12 @@ def check_input_parameters(
         print("Error: only 1, 2, 3, 4, 5, 6, 7 or 8 variable parameters,")
         print("allowed, found", num_variable_params, "variable parameters")
         sys.exit(1)
+
+    if fix_m == 0.:
+        print("Error: m cannot be 0, "
+              "to avoid division by zero in Drude-Smith formula")
+        sys.exit(1)
+
     return num_variable_params
 
 
