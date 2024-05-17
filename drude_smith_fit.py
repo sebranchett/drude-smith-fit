@@ -357,6 +357,10 @@ def perform_fit(frequencies, complex_numbers, num_variable_params):
     params_fit = arrange_parameters(params)
     std_dev_fit = arrange_parameters(std_dev, True)
 
+    # convert tau from s to fs
+    params_fit[2] *= 1E-15  # convert tau_fit from fs to s
+    std_dev_fit[2] *= 1E-15  # convert tau_fit std-dev from fs to s
+
     return [fitted_complex_numbers, params_fit, std_dev_fit]
 
 
@@ -520,7 +524,7 @@ def check_input_parameters(
         print("allowed, found", num_variable_params, "variable parameters")
         sys.exit(1)
 
-    if fix_m == 0.:
+    if fix_m is not False and fix_m == 0.:
         print("Error: m cannot be 0, "
               "to avoid division by zero in Drude-Smith formula")
         sys.exit(1)
@@ -538,7 +542,7 @@ if __name__ == "__main__":
 
     fix_phi = 1.
     fix_m = False
-    fix_tau = False
+    fix_tau = False  # fix tau in fs
     fix_c1 = False
     fix_c2 = 0.
     fix_c3 = 0.
@@ -576,9 +580,6 @@ if __name__ == "__main__":
         std_dev = perform_fit(
             frequencies, complex_numbers, num_variable_params
         )
-
-    tau_fit = tau_fit * 1E-15  # convert tau_fit from fs to s
-    std_dev[2] = std_dev[2] * 1E-15  # convert tau_fit std-dev from fs to s
 
     print_fit_results(
         phi_fit, m_fit, tau_fit, c1_fit, c2_fit, c3_fit,
