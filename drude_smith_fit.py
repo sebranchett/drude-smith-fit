@@ -492,7 +492,7 @@ def write_parameters(
             "{:.3e}".format(c2_fit) + ", " +
             "{:.3e}".format(std_dev[4]) + ", " +
             "{:.3e}".format(c3_fit) + ", " +
-            "{:.3e}".format(std_dev[5]) +
+            "{:.3e}".format(std_dev[5]) + ", " +
             "{:.3e}".format(fbn_fit) + ", " +
             "{:.3e}".format(std_dev[6]) + ", " +
             "{:.3e}".format(wbn_fit) + ", " +
@@ -575,7 +575,8 @@ if __name__ == "__main__":
 
     print_fit_results(
         phi_fit, m_fit, tau_fit, c1_fit, c2_fit, c3_fit,
-        fbn_fit, wbn_fit, gamma_fit, std_dev)
+        fbn_fit, wbn_fit, gamma_fit, std_dev
+    )
 
     title = ("phi = %.3e, m = %.3e, tau = %.3e,\n"
              "c1 = %.3e, c2 = %.3e, c3 = %.3e,\n"
