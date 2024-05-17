@@ -73,8 +73,8 @@ def drude_smith_c3(
     f1 = conversion * phi * e * tau / mstar
     f2 = 1 / (1 - 1j * w_tau)
     f3 = 1 + (c1 / (1 - 1j * w_tau)) + \
-             (c2 / (1 - 1j * w_tau) ** 2) + \
-             (c3 / (1 - 1j * w_tau) ** 3)
+             (c2 / ((1 - 1j * w_tau) ** 2)) + \
+             (c3 / ((1 - 1j * w_tau) ** 3))
     complex_argument = f1 * f2 * f3
 
     # Include the exciton response which originates from transitions from
