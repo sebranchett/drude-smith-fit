@@ -68,6 +68,8 @@ def drude_smith_c3(
     tau = tau * 1E-15  # convert tau from fs to s
     w = 2. * np.pi * frequencies
     w_tau = w * tau
+    wbn *= 1E12  # convert wbn from THz to Hz
+    gamma *= 1E12  # convert gamma from THz to Hz
 
     mstar = m * m0
     f1 = conversion * phi * e * tau / mstar
@@ -358,8 +360,14 @@ def perform_fit(frequencies, complex_numbers, num_variable_params):
     std_dev_fit = arrange_parameters(std_dev, True)
 
     # convert tau from s to fs
-    params_fit[2] *= 1E-15  # convert tau_fit from fs to s
-    std_dev_fit[2] *= 1E-15  # convert tau_fit std-dev from fs to s
+    params_fit[2] *= 1E-15
+    std_dev_fit[2] *= 1E-15
+    # convert wbn from THz to Hz
+    params_fit[7] *= 1E12
+    std_dev_fit[7] *= 1E12
+    # convert gamma from THz to Hz
+    params_fit[8] *= 1E12
+    std_dev_fit[8] *= 1E12
 
     return [fitted_complex_numbers, params_fit, std_dev_fit]
 
@@ -547,8 +555,8 @@ if __name__ == "__main__":
     fix_c2 = 0.
     fix_c3 = 0.
     fix_fbn = 0.
-    fix_wbn = 0.
-    fix_gamma = 0.
+    fix_wbn = 0.  # fix wbn in THz
+    fix_gamma = 0.  # fix gamma in THz
 
     num_variable_params = check_input_parameters(
         fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3,
