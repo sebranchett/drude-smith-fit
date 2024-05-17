@@ -523,10 +523,16 @@ def check_input_parameters(
     if not isinstance(fix_phi, float) and not isinstance(fix_m, float):
         print("Error: phi and m cannot both be variable")
         sys.exit(1)
+
+    if not isinstance(fix_fbn, float) and not isinstance(fix_m, float):
+        print("Error: fbn and m cannot both be variable")
+        sys.exit(1)
+
     num_variable_params = set_input_parameters(
         fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3,
         fix_fbn, fix_wbn, fix_gamma
     )
+
     if num_variable_params < 1 or num_variable_params > 8:
         print("Error: only 1, 2, 3, 4, 5, 6, 7 or 8 variable parameters,")
         print("allowed, found", num_variable_params, "variable parameters")
