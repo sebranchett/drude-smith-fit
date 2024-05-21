@@ -521,12 +521,14 @@ def check_input_parameters(
     fix_fbn, fix_wbn, fix_gamma
 ):
     if not isinstance(fix_phi, float) and not isinstance(fix_m, float):
-        print("Error: phi and m cannot both be variable")
-        sys.exit(1)
+        if isinstance(fix_fbn, float) and fix_fbn == 0.0:
+            print("Error: when fbn is 0, phi and m cannot both be variable")
+            sys.exit(1)
 
     if not isinstance(fix_fbn, float) and not isinstance(fix_m, float):
-        print("Error: fbn and m cannot both be variable")
-        sys.exit(1)
+        if isinstance(fix_phi, float) and fix_phi == 0.0:
+            print("Error: when phi is 0, fbn and m cannot both be variable")
+            sys.exit(1)
 
     num_variable_params = set_input_parameters(
         fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3,
