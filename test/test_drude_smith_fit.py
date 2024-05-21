@@ -1,8 +1,8 @@
 import unittest
 import numpy as np
-from drude_smith_fit import read_csv, perform_fit
-from drude_smith_fit import drude_smith_c3, arrange_parameters
-from drude_smith_fit import set_input_parameters, fit_function
+from ..drude_smith_fit import read_csv, perform_fit
+from ..drude_smith_fit import drude_smith_c3, arrange_parameters
+from ..drude_smith_fit import set_input_parameters, fit_function
 
 
 class DrudeSmithFitTestCase(unittest.TestCase):
@@ -10,7 +10,7 @@ class DrudeSmithFitTestCase(unittest.TestCase):
 
     def test_read_csv(self):
         frequencies, complex_numbers = read_csv(
-            'test_data.csv', 0.3E12, 2.2E12
+            'test/test_data.csv', 0.3E12, 2.2E12
         )
         self.assertIsInstance(frequencies, np.ndarray)
         self.assertIsInstance(complex_numbers, np.ndarray)
