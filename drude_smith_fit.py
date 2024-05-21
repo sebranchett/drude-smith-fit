@@ -85,6 +85,7 @@ def drude_smith_c3(
     # with n = 1
     ex = (e/(1j * mstar)) * (fbn * w) / \
         (wbn**2 - w**2 - (1j * w * gamma))
+    ex = (1. - phi) * ex
     complex_argument += ex
     return complex_argument
 
