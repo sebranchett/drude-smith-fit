@@ -58,7 +58,8 @@ def read_csv(filename, min_frequency, max_frequency):
 
 
 def drude_smith_c3(
-    frequencies, phi, m, tau, c1, c2=0., c3=0., fbn=0., wbn=0., gamma=0.
+    frequencies, phi, m, tau, c1, c2=0., c3=0.,
+    phi_ex=0., fbn=0., wbn=0., gamma=0.
 ):
     # Calculate the Drude-Smith mobility with 3 c coefficients
     # interpret tau as if it is in fs, this helps the fit to converge
@@ -85,7 +86,7 @@ def drude_smith_c3(
     # with n = 1
     ex = (e/(1j * mstar)) * (fbn * w) / \
         (wbn**2 - w**2 - (1j * w * gamma))
-    ex = (1. - phi) * ex
+    ex = phi_ex * ex
     complex_argument += ex
     return complex_argument
 
@@ -143,35 +144,44 @@ def arrange_parameters(fit_values, std_dev=False):
         index += 1
     if isinstance(input_parameters[6], float):
         if std_dev:
-            fbn = 0.
+            phi_ex = 0.
         else:
-            fbn = input_parameters[6]
+            phi_ex = input_parameters[6]
     else:
         fbn = fit_values[index]
         index += 1
     if isinstance(input_parameters[7], float):
         if std_dev:
-            wbn = 0.
+            fbn = 0.
         else:
-            wbn = input_parameters[7]
+            fbn = input_parameters[7]
     else:
-        wbn = fit_values[index]
+        fbn = fit_values[index]
         index += 1
     if isinstance(input_parameters[8], float):
         if std_dev:
+            wbn = 0.
+        else:
+            wbn = input_parameters[8]
+    else:
+        wbn = fit_values[index]
+        index += 1
+    if isinstance(input_parameters[9], float):
+        if std_dev:
             gamma = 0.
         else:
-            gamma = input_parameters[8]
+            gamma = input_parameters[9]
     else:
         gamma = fit_values[index]
         index += 1
-    return [phi, m, tau, c1, c2, c3, fbn, wbn, gamma]
+    return [phi, m, tau, c1, c2, c3, phi_ex, fbn, wbn, gamma]
 
 
 def fit_function(frequencies, fit_values):
-    phi, m, tau, c1, c2, c3, fbn, wbn, gamma = arrange_parameters(fit_values)
+    phi, m, tau, c1, c2, c3, phi_ex, fbn, wbn, gamma = \
+        arrange_parameters(fit_values)
     results = drude_smith_c3(
-        frequencies, phi, m, tau, c1, c2, c3, fbn, wbn, gamma
+        frequencies, phi, m, tau, c1, c2, c3, phi_ex, fbn, wbn, gamma
     )
     stretched_results = np.concatenate((np.real(results), np.imag(results)))
     return stretched_results
@@ -238,6 +248,8 @@ def perform_fit(frequencies, complex_numbers, num_variable_params):
     max_c2 = 1.
     min_c3 = -1.
     max_c3 = 1.
+    min_phi_ex = 0.
+    max_phi_ex = 1.
     min_fbn = 0.
     max_fbn = np.inf
     min_wbn = 0.
@@ -267,12 +279,15 @@ def perform_fit(frequencies, complex_numbers, num_variable_params):
         minima.append(min_c3)
         maxima.append(max_c3)
     if not isinstance(input_parameters[6], float):
+        minima.append(min_phi_ex)
+        maxima.append(max_phi_ex)
+    if not isinstance(input_parameters[7], float):
         minima.append(min_fbn)
         maxima.append(max_fbn)
-    if not isinstance(input_parameters[7], float):
+    if not isinstance(input_parameters[8], float):
         minima.append(min_wbn)
         maxima.append(max_wbn)
-    if not isinstance(input_parameters[8], float):
+    if not isinstance(input_parameters[9], float):
         minima.append(min_gamma)
         maxima.append(max_gamma)
 
@@ -284,6 +299,8 @@ def perform_fit(frequencies, complex_numbers, num_variable_params):
 
     # Perform the fit (curve_fit requires separate functions for
     # different numbers of parameters)
+    # There are 10 parameters in total, but only one of phi_ex, fbn and m
+    # can be variable, so the number of variable parameters is between 1 and 8
     if num_variable_params == 8:
         params, pcov = curve_fit(
             fit_function_8, frequencies, stretched_complex_numbers,
@@ -364,11 +381,11 @@ def perform_fit(frequencies, complex_numbers, num_variable_params):
     params_fit[2] *= 1E-15
     std_dev_fit[2] *= 1E-15
     # convert wbn from THz to Hz
-    params_fit[7] *= 1E12
-    std_dev_fit[7] *= 1E12
-    # convert gamma from THz to Hz
     params_fit[8] *= 1E12
     std_dev_fit[8] *= 1E12
+    # convert gamma from THz to Hz
+    params_fit[9] *= 1E12
+    std_dev_fit[9] *= 1E12
 
     return [fitted_complex_numbers, params_fit, std_dev_fit]
 
@@ -424,9 +441,9 @@ def plot_experimental_and_fitted_data(
     plt.show()
 
 
-def set_input_parameters(phi, m, tau, c1, c2, c3, fbn, wbn, gamma):
+def set_input_parameters(phi, m, tau, c1, c2, c3, phi_ex, fbn, wbn, gamma):
     global input_parameters
-    input_parameters = [phi, m, tau, c1, c2, c3, fbn, wbn, gamma]
+    input_parameters = [phi, m, tau, c1, c2, c3, phi_ex, fbn, wbn, gamma]
     num_variable_params = sum(
         not isinstance(param, float) for param in input_parameters
     )
@@ -435,7 +452,7 @@ def set_input_parameters(phi, m, tau, c1, c2, c3, fbn, wbn, gamma):
 
 def print_fit_results(
         phi_fit, m_fit, tau_fit, c1_fit, c2_fit, c3_fit,
-        fbn_fit, wbn_fit, gamma_fit, std_dev
+        phi_ex_fit, fbn_fit, wbn_fit, gamma_fit, std_dev
 ):
     print("Value of phi:", '{:.3e}'.format(phi_fit), end=" ")
     if not isinstance(input_parameters[0], float):
@@ -467,30 +484,36 @@ def print_fit_results(
         print("+/-", '{:.3e}'.format(std_dev[5]))
     else:
         print('fixed')
-    print("Value of fbn:", '{:.3e}'.format(fbn_fit), end=" ")
+    print("Value of phi_ex:", '{:.3e}'.format(phi_ex_fit), end=" ")
     if not isinstance(input_parameters[6], float):
         print("+/-", '{:.3e}'.format(std_dev[6]))
     else:
         print('fixed')
-    print("Value of wbn:", '{:.3e}'.format(wbn_fit), end=" ")
+    print("Value of fbn:", '{:.3e}'.format(fbn_fit), end=" ")
     if not isinstance(input_parameters[7], float):
         print("+/-", '{:.3e}'.format(std_dev[7]))
     else:
         print('fixed')
-    print("Value of gamma:", '{:.3e}'.format(gamma_fit), end=" ")
+    print("Value of wbn:", '{:.3e}'.format(wbn_fit), end=" ")
     if not isinstance(input_parameters[8], float):
         print("+/-", '{:.3e}'.format(std_dev[8]))
+    else:
+        print('fixed')
+    print("Value of gamma:", '{:.3e}'.format(gamma_fit), end=" ")
+    if not isinstance(input_parameters[9], float):
+        print("+/-", '{:.3e}'.format(std_dev[9]))
     else:
         print('fixed')
 
 
 def write_parameters(
         filename, phi_fit, m_fit, tau_fit,
-        c1_fit, c2_fit, c3_fit, fbn_fit, wbn_fit, gamma_fit, std_dev
+        c1_fit, c2_fit, c3_fit,
+        phi_ex_fit, fbn_fit, wbn_fit, gamma_fit, std_dev
 ):
     header = (
         "# phi, std, m, std, tau, std, c1, std, c2, std, c3, std, "
-        "fbn, std, wbn, std, gamma, std\n"
+        "phi_ex, std, fbn, std, wbn, std, gamma, std\n"
     )
     with open(filename, 'w') as file:
         file.writelines(header)
@@ -507,33 +530,48 @@ def write_parameters(
             "{:.3e}".format(std_dev[4]) + ", " +
             "{:.3e}".format(c3_fit) + ", " +
             "{:.3e}".format(std_dev[5]) + ", " +
-            "{:.3e}".format(fbn_fit) + ", " +
+            "{:.3e}".format(phi_ex_fit) + ", " +
             "{:.3e}".format(std_dev[6]) + ", " +
-            "{:.3e}".format(wbn_fit) + ", " +
+            "{:.3e}".format(fbn_fit) + ", " +
             "{:.3e}".format(std_dev[7]) + ", " +
+            "{:.3e}".format(wbn_fit) + ", " +
+            "{:.3e}".format(std_dev[8]) + ", " +
             "{:.3e}".format(gamma_fit) + ", " +
-            "{:.3e}".format(std_dev[8]) +
+            "{:.3e}".format(std_dev[9]) +
             "\n"
         )
 
 
 def check_input_parameters(
     fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3,
-    fix_fbn, fix_wbn, fix_gamma
+    fix_phi_ex, fix_fbn, fix_wbn, fix_gamma
 ):
-    if not isinstance(fix_phi, float) and not isinstance(fix_m, float):
-        if isinstance(fix_fbn, float) and fix_fbn == 0.0:
-            print("Error: when fbn is 0, phi and m cannot both be variable")
-            sys.exit(1)
+    # convert integer values to floats
+    fix_phi = float(fix_phi) if type(fix_phi) is int else fix_phi
+    fix_m = float(fix_m) if type(fix_m) is int else fix_m
+    fix_tau = float(fix_tau) if type(fix_tau) is int else fix_tau
+    fix_c1 = float(fix_c1) if type(fix_c1) is int else fix_c1
+    fix_c2 = float(fix_c2) if type(fix_c2) is int else fix_c2
+    fix_c3 = float(fix_c3) if type(fix_c3) is int else fix_c3
+    fix_phi_ex = float(fix_phi_ex) if type(fix_phi_ex) is int else fix_phi_ex
+    fix_fbn = float(fix_fbn) if type(fix_fbn) is int else fix_fbn
+    fix_wbn = float(fix_wbn) if type(fix_wbn) is int else fix_wbn
+    fix_gamma = float(fix_gamma) if type(fix_gamma) is int else fix_gamma
 
-    if not isinstance(fix_fbn, float) and not isinstance(fix_m, float):
-        if isinstance(fix_phi, float) and fix_phi == 0.0:
-            print("Error: when phi is 0, fbn and m cannot both be variable")
-            sys.exit(1)
+    if not isinstance(fix_phi, float) and not isinstance(fix_m, float):
+        print("Error: phi and m cannot both be fit simultaneously")
+        sys.exit(1)
+
+    # Only one of phi_ex, fbn and m can be variable
+    if sum(
+        not isinstance(var, float) for var in [fix_phi_ex, fix_fbn, fix_m]
+    ) > 1:
+        print("Error: Only one of phi_ex, fbn and m can be fit")
+        sys.exit(1)
 
     num_variable_params = set_input_parameters(
         fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3,
-        fix_fbn, fix_wbn, fix_gamma
+        fix_phi_ex, fix_fbn, fix_wbn, fix_gamma
     )
 
     if num_variable_params < 1 or num_variable_params > 8:
@@ -563,13 +601,14 @@ if __name__ == "__main__":
     fix_c1 = False
     fix_c2 = 0.
     fix_c3 = 0.
+    fix_phi_ex = 0.
     fix_fbn = 0.
     fix_wbn = 0.  # fix wbn in THz
     fix_gamma = 0.  # fix gamma in THz
 
     num_variable_params = check_input_parameters(
         fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3,
-        fix_fbn, fix_wbn, fix_gamma
+        fix_phi_ex, fix_fbn, fix_wbn, fix_gamma
     )
 
     if len(sys.argv) > 1:
@@ -593,30 +632,31 @@ if __name__ == "__main__":
 
     fitted_complex_numbers, \
         [phi_fit, m_fit, tau_fit, c1_fit, c2_fit, c3_fit,
-         fbn_fit, wbn_fit, gamma_fit], \
+         phi_ex_fit, fbn_fit, wbn_fit, gamma_fit], \
         std_dev = perform_fit(
             frequencies, complex_numbers, num_variable_params
         )
 
     print_fit_results(
         phi_fit, m_fit, tau_fit, c1_fit, c2_fit, c3_fit,
-        fbn_fit, wbn_fit, gamma_fit, std_dev
+        phi_ex_fit, fbn_fit, wbn_fit, gamma_fit, std_dev
     )
 
     title = ("phi = %.3e, m = %.3e, tau = %.3e,\n"
              "c1 = %.3e, c2 = %.3e, c3 = %.3e,\n"
-             "fbn = %.3e, wbn = %.3e, gamma = %.3e")
+             "phi_ex = %.3e, fbn = %.3e, wbn = %.3e, gamma = %.3e")
     plot_experimental_and_fitted_data(
         frequencies, complex_numbers, fitted_complex_numbers,
         title
         % (phi_fit, m_fit, tau_fit, c1_fit, c2_fit, c3_fit,
-           fbn_fit, wbn_fit, gamma_fit),
+           phi_ex_fit, fbn_fit, wbn_fit, gamma_fit),
         image_filename
     )
 
     write_parameters(
         param_filename, phi_fit, m_fit, tau_fit,
-        c1_fit, c2_fit, c3_fit, fbn_fit, wbn_fit, gamma_fit, std_dev
+        c1_fit, c2_fit, c3_fit,
+        phi_ex_fit, fbn_fit, wbn_fit, gamma_fit, std_dev
     )
 
     write_csv(

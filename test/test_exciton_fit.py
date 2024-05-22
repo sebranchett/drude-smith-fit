@@ -7,7 +7,7 @@ from ..drude_smith_fit import set_input_parameters
 class ExcitonFitTestCase(unittest.TestCase):
 
     def test_exciton_fit(self):
-        set_input_parameters(0., 1., 0., 0., 0., 0., False, False, False)
+        set_input_parameters(0., 1., 0., 0., 0., 0., 1., False, False, False)
         frequencies, complex_numbers = read_csv(
             'test/test_exciton.csv', 0., 2.E13
         )
@@ -19,15 +19,15 @@ class ExcitonFitTestCase(unittest.TestCase):
         self.assertIsInstance(params_fit, list)
         self.assertIsInstance(std_dev_fit, list)
         self.assertEqual(len(fitted_complex_numbers), len(frequencies))
-        self.assertEqual(len(params_fit), 9)
-        self.assertEqual(len(std_dev_fit), 9)
+        self.assertEqual(len(params_fit), 10)
+        self.assertEqual(len(std_dev_fit), 10)
         expected_result = np.array([
-            0., 1., 0., 0., 0., 0., 300., 6.28319E13, 2.E13
+            0., 1., 0., 0., 0., 0., 1., 300., 6.28319E13, 2.E13
         ])
         assert np.isclose(params_fit, expected_result).all()
 
         expected_result = np.array([
-            0., 0., 0., 0., 0., 0., 4.133830e-11, 1.194149, 3.648919
+            0., 0., 0., 0., 0., 0., 0., 4.133830e-11, 1.194149, 3.648919
         ])
         assert np.isclose(std_dev_fit, expected_result).all()
 
