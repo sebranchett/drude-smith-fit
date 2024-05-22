@@ -148,7 +148,7 @@ def arrange_parameters(fit_values, std_dev=False):
         else:
             phi_ex = input_parameters[6]
     else:
-        fbn = fit_values[index]
+        phi_ex = fit_values[index]
         index += 1
     if isinstance(input_parameters[7], float):
         if std_dev:
