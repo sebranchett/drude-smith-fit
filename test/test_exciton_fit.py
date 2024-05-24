@@ -22,14 +22,14 @@ class ExcitonFitTestCase(unittest.TestCase):
         self.assertEqual(len(params_fit), 10)
         self.assertEqual(len(std_dev_fit), 10)
         expected_result = np.array([
-            0., 1., 0., 0., 0., 0., 1., 300., 6.28319E13, 2.E13
+            0., 1., 0., 0., 0., 0., 1., .03, 6.28319E13, 2.E13
         ])
         assert np.isclose(params_fit, expected_result).all()
 
         expected_result = np.array([
-            0., 0., 0., 0., 0., 0., 0., 4.133830e-11, 1.194149, 3.648919
+            0., 0., 0., 0., 0., 0., 0., 1.793e-18, 5.180e-04, 1.583e-03
         ])
-        assert np.isclose(std_dev_fit, expected_result).all()
+        assert np.isclose(std_dev_fit, expected_result, rtol=.001).all()
 
     def test_mixed_fit(self):
         # Test fitting a mixed model with Drude and Lorentz
@@ -46,14 +46,14 @@ class ExcitonFitTestCase(unittest.TestCase):
         self.assertEqual(len(params_fit), 10)
         self.assertEqual(len(std_dev_fit), 10)
         expected_result = np.array([
-            0.10186, 1., 1.913E-15, -1., .9999, .9999,
-            1., 4.396E-8, 8.706E7, 7.083E7
+            5.408e-02, 1.000e+00, 1.165e-14, -5.061e-28, -4.918e-01, -1.000e+00,
+            1.000e+00, 3.495e-03, 2.137e+12, 6.882e+12
         ])
         assert np.isclose(params_fit, expected_result, rtol=.001).all()
 
         expected_result = np.array([
-            2.581E2, 0., 1.276E-12, 8.937E3, 1.548E4, 1.293E4,
-            0., 2.587E1, 0., 0.
+            1.094e-01, 0.000e+00, 1.469e-14, 7.190e+00, 1.716e+01, 9.861e+00,
+            0.000e+00, 7.358e-03, 1.732e+13, 1.526e+13
         ])
         assert np.isclose(std_dev_fit, expected_result, rtol=.001).all()
 

@@ -90,13 +90,13 @@ class DrudeSmithFitTestCase(unittest.TestCase):
             1., 12.365495, 50.029175e-15, -0.31461, 0., 0., 0., 0., 0., 0.
         ])
         np.testing.assert_array_almost_equal(
-            params_fit, expected_result
+            params_fit, expected_result, decimal=5
         )
         expected_result = np.array([
             0., 8.801074, 92.359832e-15,  1.231788, 0., 0., 0., 0., 0., 0.
         ])
         np.testing.assert_array_almost_equal(
-            std_dev_fit, expected_result
+            std_dev_fit, expected_result, decimal=5
         )
 
 

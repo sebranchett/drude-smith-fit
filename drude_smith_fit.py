@@ -73,7 +73,7 @@ def drude_smith_c3(
     gamma *= 1E12  # convert gamma from THz to Hz
 
     mstar = m * m0
-    f1 = conversion * phi * e * tau / mstar
+    f1 = phi * e * tau / mstar
     f2 = 1 / (1 - 1j * w_tau)
     f3 = 1 + (c1 / (1 - 1j * w_tau)) + \
              (c2 / ((1 - 1j * w_tau) ** 2)) + \
@@ -88,7 +88,7 @@ def drude_smith_c3(
         (wbn**2 - w**2 - (1j * w * gamma))
     ex = phi_ex * ex
     complex_argument += ex
-    return complex_argument
+    return conversion * complex_argument
 
 
 def arrange_parameters(fit_values, std_dev=False):
