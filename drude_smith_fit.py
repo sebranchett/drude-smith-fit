@@ -250,7 +250,7 @@ def perform_fit(frequencies, complex_numbers, num_variable_params):
     max_c3 = 1.
     min_phi_ex = 0.
     max_phi_ex = 1.
-    min_fbn = 0.
+    min_fbn = -np.inf
     max_fbn = np.inf
     min_wbn = 0.
     max_wbn = np.inf
@@ -431,7 +431,8 @@ def plot_experimental_and_fitted_data(
     plt.plot(
         frequencies,
         [complex_number.imag for complex_number in fitted_complex_numbers],
-        color='blue'
+        color='blue',
+        linestyle='--'
     )
     plt.legend()
     plt.xlabel('Frequency')
