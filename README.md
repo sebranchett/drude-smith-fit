@@ -19,7 +19,8 @@ $+$
 
 $ 
 \phi_{EX} \cdot \frac{{e}}{{i m^*}} \cdot
-\frac{{f_{bn} \omega}}{{\omega_{bn}^2 - \omega^2 - i \omega \Gamma}}$ (Lorentz part)
+\frac{{f_{bn} \omega}}{{\omega_{bn}^2 - \omega^2 - i \omega \Gamma}}
+$ (Lorentz part)
 
 
 ## Things to note
