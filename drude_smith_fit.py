@@ -250,7 +250,7 @@ def perform_fit(frequencies, complex_numbers, num_variable_params):
     max_c3 = 1.
     min_phi_ex = 0.
     max_phi_ex = 1.
-    min_fbn = -np.inf
+    min_fbn = 0.
     max_fbn = np.inf
     min_wbn = 0.
     max_wbn = np.inf
