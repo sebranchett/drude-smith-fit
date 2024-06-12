@@ -22,6 +22,7 @@ $
 \frac{{f_{bn} \omega}}{{\omega_{bn}^2 - \omega^2 - i \omega \Gamma}}
 $ (Lorentz part)
 
+$ $
 
 ## Things to note
 * Experimental input data must be in $cm^2$ $V^{-1}$ $s^{-1}$ (not SI units)
