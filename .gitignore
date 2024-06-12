@@ -1,12 +1,13 @@
 # Ignore generated images
 *.png
-mobility.csv
 .vscode
 __pycache__/
 *.jpg
 *.jpeg
 *.pdf
-*.csv
+*_param.csv
+*_fitted.csv
 *.txt
 .ipynb_checkpoints/
+data/
 helper/

@@ -50,28 +50,28 @@ class ExcitonFitTestCase(unittest.TestCase):
 
     def test_mixed_fit(self):
         # Test fitting a mixed model with Drude and Lorentz
-        # Not a good fit, but it should work
-        set_input_parameters(False, 1., False, False, False, False,
-                             1., False, False, False)
+        set_input_parameters(phi=False, m=0.2, tau=False,
+                             c1=False, c2=0., c3=0.,
+                             phi_ex=0.5, fbn=False,
+                             wbn=(1.91 * 2. * 3.1416), gamma=False)
         frequencies, complex_numbers = read_csv(
-            'test/test_exciton.csv', 0., 2.E13
+            'test/test_combine.csv', 0., 2.5E13
         )
-        num_variable_params = 8
+        num_variable_params = 5
         fitted_complex_numbers, params_fit, std_dev_fit = perform_fit(
             frequencies, complex_numbers, num_variable_params
         )
         self.assertEqual(len(params_fit), 10)
         self.assertEqual(len(std_dev_fit), 10)
         expected_result = np.array([
-            5.408e-02, 1.000e+00, 1.165e-14,
-            -5.061e-28, -4.918e-01, -1.000e+00,
-            1.000e+00, 3.495e-03, 2.137e+12, 6.882e+12
+            0.5, 0.2, 700.E-15, -0.7, 0., 0.,
+            0.5, 0.4, 12.E12, 1.E12
         ])
         assert np.isclose(params_fit, expected_result, rtol=.001).all()
 
         expected_result = np.array([
-            1.094e-01, 0.000e+00, 1.469e-14, 7.190e+00, 1.716e+01, 9.861e+00,
-            0.000e+00, 7.358e-03, 1.732e+13, 1.526e+13
+            2.644e-05, 0.000e+00, 5.786e-17, 6.108e-05, 0.000e+00, 0.000e+00,
+            0.000e+00, 3.565e-05, 0.000e+00, 1.211e+08
         ])
         assert np.isclose(std_dev_fit, expected_result, rtol=.001).all()
 
