@@ -14,8 +14,10 @@ $\phi \cdot \frac{{e \tau}}{{m^*}} \cdot
 \frac{{1}}{{1 - i \omega \tau}} \cdot
 (1 + \frac{{c1}}{{1 - i \omega \tau}} + \frac{{c2}}{{(1 - i \omega \tau)^2}} + \frac{{c3}}{{(1 - i \omega \tau)^3}}) +$
 
-$\phi _{EX} \cdot \frac{{e}}{{i m^*}} \cdot
-\frac{{f_{bn} \omega}}{{\omega_{bn}^2 - \omega^2 - i \omega \Gamma}}$
+$\phi_{EX} \cdot \frac{{e}}{{i m^*}} \cdot
+\frac{{f_{bn} \omega}}{{}}$
+
+${{\omega_{bn}^2 - \omega^2 - i \omega \Gamma}}$
 
 where $\omega = 2 \pi \cdot frequency$.
 
