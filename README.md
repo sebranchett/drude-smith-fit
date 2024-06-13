@@ -8,19 +8,16 @@ For exciton response, See Equations 2 and 4 in this paper: [Nanoscale, 2019,11, 
 
 
 ## Fit Equation
-$$
-Signal [cm^2 V^{-1} s^{-1}] =
-$$
-$$
-\phi \cdot \frac{{e \tau}}{{m^*}} \cdot 
-\frac{{1}}{{1 - i \omega \tau}} \cdot
-(1 + \frac{{c1}}{{1 - i \omega \tau}} + \frac{{c2}}{{(1 - i \omega \tau)^2}} + \frac{{c3}}{{(1 - i \omega \tau)^3}}) +
-$$
-$$
-\phi _{EX} \cdot \frac{{e}}{{i m^*}} \cdot
-\frac{{f_{bn} \omega}}{{\omega_{bn}^2 - \omega^2 - i \omega \Gamma}}
-$$
+$Signal [cm^2 V^{-1} s^{-1}] =$
 
+$\phi \cdot \frac{{e \tau}}{{m^*}} \cdot 
+\frac{{1}}{{1 - i \omega \tau}} \cdot
+(1 + \frac{{c1}}{{1 - i \omega \tau}} + \frac{{c2}}{{(1 - i \omega \tau)^2}} + \frac{{c3}}{{(1 - i \omega \tau)^3}}) +$
+
+$\phi _{EX} \cdot \frac{{e}}{{i m^*}} \cdot
+\frac{{f_{bn} \omega}}{{\omega_{bn}^2 - \omega^2 - i \omega \Gamma}}$
+
+where $\omega = 2 \pi \cdot frequency$.
 
 ## Things to note
 * Experimental input data must be in $cm^2$ $V^{-1}$ $s^{-1}$ (not SI units)
