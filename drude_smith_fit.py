@@ -419,7 +419,7 @@ def plot_experimental_and_fitted_data(
     plt.scatter(
         frequencies,
         [complex_number.imag for complex_number in complex_numbers],
-        marker='.',
+        marker='x',
         color='red'
     )
     plt.plot(
@@ -559,16 +559,28 @@ def check_input_parameters(
     fix_wbn = float(fix_wbn) if type(fix_wbn) is int else fix_wbn
     fix_gamma = float(fix_gamma) if type(fix_gamma) is int else fix_gamma
 
-    if not isinstance(fix_phi, float) and not isinstance(fix_m, float):
-        print("Error: phi and m cannot both be fit simultaneously")
+    # phi_ex and fbn cannot be fit simultaneously
+    if not isinstance(fix_phi_ex, float) and not isinstance(fix_fbn, float):
+        print("Error: phi_ex and fbn cannot both be fit simultaneously")
         sys.exit(1)
 
-    # Only one of phi_ex, fbn and m can be variable
-    if sum(
-        not isinstance(var, float) for var in [fix_phi_ex, fix_fbn, fix_m]
-    ) > 1:
-        print("Error: Only one of phi_ex, fbn and m can be fit")
-        sys.exit(1)
+    # If no Lorentz part,
+    if (isinstance(fix_phi_ex, float) and fix_phi_ex == 0.) or  \
+       (isinstance(fix_fbn, float) and fix_fbn == 0.):
+        # then phi and m cannot both be fit
+        if not isinstance(fix_phi, float) and not isinstance(fix_m, float):
+            print("Error: phi and m cannot both be fit simultaneously")
+            sys.exit(1)
+
+    # If no Drude-Smith part,
+    if (isinstance(fix_phi, float) and fix_phi == 0.) or \
+       (isinstance(fix_tau, float) and (fix_tau == 0.)):
+        # then only one of phi_ex, fbn and m can be fit simultaneously
+        if sum(
+            not isinstance(var, float) for var in [fix_phi_ex, fix_fbn, fix_m]
+        ) > 1:
+            print("Error: Only one of phi_ex, fbn and m can be fit")
+            sys.exit(1)
 
     num_variable_params = set_input_parameters(
         fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3,
