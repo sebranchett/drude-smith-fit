@@ -236,6 +236,7 @@ def fit_function_1(frequencies, fit01):
 def perform_fit(frequencies, complex_numbers, num_variable_params):
     global input_parameters
     # Set some physics boundaries
+    min_Lorentz_f = input_parameters[10]
     min_phi = 0.
     max_phi = 1.
     min_m = 0.
@@ -252,7 +253,7 @@ def perform_fit(frequencies, complex_numbers, num_variable_params):
     max_phi_ex = 1.
     min_fbn = 0.
     max_fbn = np.inf
-    min_wbn = 0.
+    min_wbn = 2. * np.pi * min_Lorentz_f
     max_wbn = np.inf
     min_gamma = 0.
     max_gamma = np.inf
@@ -442,9 +443,11 @@ def plot_experimental_and_fitted_data(
     plt.show()
 
 
-def set_input_parameters(phi, m, tau, c1, c2, c3, phi_ex, fbn, wbn, gamma):
+def set_input_parameters(phi, m, tau, c1, c2, c3,
+                         phi_ex, fbn, wbn, gamma, min_Lorentz_f=0.):
     global input_parameters
-    input_parameters = [phi, m, tau, c1, c2, c3, phi_ex, fbn, wbn, gamma]
+    input_parameters = [phi, m, tau, c1, c2, c3,
+                        phi_ex, fbn, wbn, gamma, min_Lorentz_f]
     num_variable_params = sum(
         not isinstance(param, float) for param in input_parameters
     )
@@ -545,7 +548,7 @@ def write_parameters(
 
 def check_input_parameters(
     fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3,
-    fix_phi_ex, fix_fbn, fix_wbn, fix_gamma
+    fix_phi_ex, fix_fbn, fix_wbn, fix_gamma, min_Lorentz_f=0.
 ):
     # convert integer values to floats
     fix_phi = float(fix_phi) if type(fix_phi) is int else fix_phi
@@ -558,6 +561,7 @@ def check_input_parameters(
     fix_fbn = float(fix_fbn) if type(fix_fbn) is int else fix_fbn
     fix_wbn = float(fix_wbn) if type(fix_wbn) is int else fix_wbn
     fix_gamma = float(fix_gamma) if type(fix_gamma) is int else fix_gamma
+    min_Lorentz_f = float(min_Lorentz_f)
 
     # phi_ex and fbn cannot be fit simultaneously
     if not isinstance(fix_phi_ex, float) and not isinstance(fix_fbn, float):
@@ -584,7 +588,7 @@ def check_input_parameters(
 
     num_variable_params = set_input_parameters(
         fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3,
-        fix_phi_ex, fix_fbn, fix_wbn, fix_gamma
+        fix_phi_ex, fix_fbn, fix_wbn, fix_gamma, min_Lorentz_f
     )
 
     if num_variable_params < 1 or num_variable_params > 8:
