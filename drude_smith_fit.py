@@ -8,9 +8,12 @@ import matplotlib.pyplot as plt
 
 def print_help():
     print("Usage: python drude_smith_fit.py [input_filename [min_frequency" +
-          " [max_frequency [output_filename]]]]")
+          " [max_frequency [fix_phi [fix_m [fix_tau" +
+          " [fix_c1 [fix_c2 [fix_c3 [fix_phi_ex [fix_fbn [fix_wbn" +
+          " [fix_gamma [min_Lorentz_f]]]]]]]]]]]]]]")
     print("")
-    print("Fits experimental data to the Drude-Smith model for mobility.")
+    print("Fits experimental data to the Drude-Smith model for mobility " +
+          "and Lorentz oscillator for exciton response.")
     print("")
     print("")
     print("input_filename: The name of the file containing the experimental" +
@@ -19,12 +22,25 @@ def print_help():
           " the imaginary part of the complex number, and the third column" +
           " containing the real part of the complex number.")
     print("*** UNITS must be cm2 V-1 s-1. ***")
+    print("Default is 'mobility.csv'.")
     print("")
-    print("min_frequency: The minimum frequency to include in the fit. " +
-          "Default is 0.3 THz.")
+    print("min_frequency, max_frequency: The minimum and maximum " +
+          "frequencies to include in the fit.")
+    print("Defaults are 0.3E12 and 2.2E12.")
     print("")
-    print("max_frequency: The maximum frequency to include in the fit. " +
-          "Default is 2.2 THz.")
+    print("fix_phi, fix_m, fix_tau: Drude fit parameters.")
+    print("Defaults are 1., False, False. 'False' means parameter will be " +
+          "fit.")
+    print("")
+    print("fix_c1, fix_c2, fix_c3: Smith fit parameters.")
+    print("Defaults are False, 0., 0. 'False' means parameter will be fit.")
+    print("")
+    print("fix_phi_ex, fix_fbn, fix_wbn, fix_gamma: Lorentz fit parameters.")
+    print("Defaults are 0., 0., 0., 0. 'False' means parameter will be fit.")
+    print("")
+    print("min_Lorentz_f: Minimum frequency [THz] to start search for " +
+          "Lorentz peak in Real part of signal.")
+    print("Default is -1., which means the program will try to guess.")
     print("")
     print("The input file basename is used to create the output file names.")
     print("This program creates a .png file with a graph of the fit,")
@@ -656,17 +672,69 @@ if __name__ == "__main__":
     fix_fbn = 0.
     fix_wbn = 0.  # fix wbn in THz
     fix_gamma = 0.  # fix gamma in THz
+    min_Lorentz_f = -1.  # THz
 
     if len(sys.argv) > 1:
-        print('input_filename:', input_filename)
         input_filename = sys.argv[1]
         if input_filename == "-h" or input_filename == "--help":
             print_help()
             sys.exit(0)
         if len(sys.argv) > 2:
             min_frequency = float(sys.argv[2])
-            if len(sys.argv) > 3:
-                max_frequency = float(sys.argv[3])
+        if len(sys.argv) > 3:
+            max_frequency = float(sys.argv[3])
+        if len(sys.argv) > 4:
+            if sys.argv[4] == "False":
+                fix_phi = False
+            else:
+                fix_phi = float(sys.argv[4])
+        if len(sys.argv) > 5:
+            if sys.argv[5] == "False":
+                fix_m = False
+            else:
+                fix_m = float(sys.argv[5])
+        if len(sys.argv) > 6:
+            if sys.argv[6] == "False":
+                fix_tau = False
+            else:
+                fix_tau = float(sys.argv[6])
+        if len(sys.argv) > 7:
+            if sys.argv[7] == "False":
+                fix_c1 = False
+            else:
+                fix_c1 = float(sys.argv[7])
+        if len(sys.argv) > 8:
+            if sys.argv[8] == "False":
+                fix_c2 = False
+            else:
+                fix_c2 = float(sys.argv[8])
+        if len(sys.argv) > 9:
+            if sys.argv[9] == "False":
+                fix_c3 = False
+            else:
+                fix_c3 = float(sys.argv[9])
+        if len(sys.argv) > 10:
+            if sys.argv[10] == "False":
+                fix_phi_ex = False
+            else:
+                fix_phi_ex = float(sys.argv[10])
+        if len(sys.argv) > 11:
+            if sys.argv[11] == "False":
+                fix_fbn = False
+            else:
+                fix_fbn = float(sys.argv[11])
+        if len(sys.argv) > 12:
+            if sys.argv[12] == "False":
+                fix_wbn = False
+            else:
+                fix_wbn = float(sys.argv[12])
+        if len(sys.argv) > 13:
+            if sys.argv[13] == "False":
+                fix_gamma = False
+            else:
+                fix_gamma = float(sys.argv[13])
+        if len(sys.argv) > 14:
+            min_Lorentz_f = float(sys.argv[14])
 
     if input_filename[-4] != ".":
         raise ValueError("Could not find file extension")
@@ -679,7 +747,8 @@ if __name__ == "__main__":
     frequencies, complex_numbers = read_csv(
         input_filename, min_frequency, max_frequency
     )
-    min_Lorentz_f = guess_min_Lorentz_f(frequencies, complex_numbers.real)
+    if min_Lorentz_f == -1.:
+        min_Lorentz_f = guess_min_Lorentz_f(frequencies, complex_numbers.real)
 
     num_variable_params = check_input_parameters(
         fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3,
