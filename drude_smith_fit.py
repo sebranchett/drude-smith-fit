@@ -188,8 +188,17 @@ def fit_function(frequencies, fit_values):
     return stretched_results
 
 
-# The following 8 defs are needed because curve_fit requires a function with
+# The following 9 defs are needed because curve_fit requires a function with
 # the right number of parameters
+def fit_function_9(
+    frequencies, fit01, fit02, fit03, fit04, fit05, fit06, fit07, fit08,
+    fit09
+):
+    fit_values = [fit01, fit02, fit03, fit04, fit05, fit06, fit07, fit08,
+                  fit09]
+    return fit_function(frequencies, fit_values)
+
+
 def fit_function_8(
     frequencies, fit01, fit02, fit03, fit04, fit05, fit06, fit07, fit08
 ):
@@ -303,7 +312,16 @@ def perform_fit(frequencies, complex_numbers, num_variable_params):
     # different numbers of parameters)
     # There are 10 parameters in total, but only one of phi_ex, fbn and m
     # can be variable, so the number of variable parameters is between 1 and 8
-    if num_variable_params == 8:
+    if num_variable_params == 9:
+        params, pcov = curve_fit(
+            fit_function_9, frequencies, stretched_complex_numbers,
+            bounds=(minima, maxima)
+        )
+        fitted_stretched_complex_numbers = fit_function_9(
+            frequencies, params[0], params[1], params[2], params[3],
+            params[4], params[5], params[6], params[7], params[8]
+        )
+    elif num_variable_params == 8:
         params, pcov = curve_fit(
             fit_function_8, frequencies, stretched_complex_numbers,
             bounds=(minima, maxima)
@@ -594,8 +612,8 @@ def check_input_parameters(
         fix_phi_ex, fix_fbn, fix_wbn, fix_gamma, min_Lorentz_f
     )
 
-    if num_variable_params < 1 or num_variable_params > 8:
-        print("Error: only 1, 2, 3, 4, 5, 6, 7 or 8 variable parameters,")
+    if num_variable_params < 1 or num_variable_params > 9:
+        print("Error: only 1, 2, 3, 4, 5, 6, 7, 8 or 9 variable parameters,")
         print("allowed, found", num_variable_params, "variable parameters")
         sys.exit(1)
 
