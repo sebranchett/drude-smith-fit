@@ -415,24 +415,26 @@ def plot_experimental_and_fitted_data(
         frequencies,
         [complex_number.real for complex_number in complex_numbers],
         marker='.',
-        label='Experimental',
+        label='Experimental Real',
         color='red'
     )
     plt.scatter(
         frequencies,
         [complex_number.imag for complex_number in complex_numbers],
         marker='x',
+        label='Experimental Imaginary',
         color='red'
     )
     plt.plot(
         frequencies,
         [complex_number.real for complex_number in fitted_complex_numbers],
-        label='Fitted',
+        label='Fitted Real',
         color='blue'
     )
     plt.plot(
         frequencies,
         [complex_number.imag for complex_number in fitted_complex_numbers],
+        label='Fitted Imaginary',
         color='blue',
         linestyle='--'
     )
