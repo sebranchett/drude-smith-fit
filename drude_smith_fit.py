@@ -2,6 +2,7 @@ import sys
 import csv
 import numpy as np
 from scipy.optimize import curve_fit
+from scipy.signal import find_peaks
 import matplotlib.pyplot as plt
 
 
@@ -680,3 +681,15 @@ if __name__ == "__main__":
         data_filename, frequencies, complex_numbers,
         fitted_complex_numbers
     )
+
+
+def guess_min_Lorentz_f(frequencies, real_values):
+    # Try to guess where the Lorentz peak starts.
+    # Find the peak in the real experimental values at the highest frequency
+    # and guess frequency just before, converting it to THz
+    peaks, _ = find_peaks(real_values)
+
+    min_Lorentz_f = 0.
+    if len(peaks) > 0 and peaks[-1] > 1:
+        min_Lorentz_f = frequencies[peaks[-1]-2] / 1.E12
+    return min_Lorentz_f
