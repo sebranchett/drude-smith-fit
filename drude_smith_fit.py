@@ -27,8 +27,9 @@ def print_help():
           "Default is 2.2 THz.")
     print("")
     print("The input file basename is used to create the output file names.")
-    print("This program creates a .png file with a graph of the fit and")
-    print("a .txt file with the fitted parameters.")
+    print("This program creates a .png file with a graph of the fit,")
+    print("a _param.csv file with the fitted parameters and a _fitted.csv")
+    print("file with both the experimental and fitted data.")
 
 
 def read_csv(filename, min_frequency, max_frequency):
@@ -625,6 +626,18 @@ def check_input_parameters(
     return num_variable_params
 
 
+def guess_min_Lorentz_f(frequencies, real_values):
+    # Try to guess where the Lorentz peak starts.
+    # Find the peak in the real experimental values at the highest frequency
+    # and guess frequency just before, converting it to THz
+    peaks, _ = find_peaks(real_values)
+
+    min_Lorentz_f = 0.
+    if len(peaks) > 0 and peaks[-1] > 1:
+        min_Lorentz_f = frequencies[peaks[-1]-2] / 1.E12
+    return min_Lorentz_f
+
+
 if __name__ == "__main__":
     global input_parameters
 
@@ -644,11 +657,6 @@ if __name__ == "__main__":
     fix_wbn = 0.  # fix wbn in THz
     fix_gamma = 0.  # fix gamma in THz
 
-    num_variable_params = check_input_parameters(
-        fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3,
-        fix_phi_ex, fix_fbn, fix_wbn, fix_gamma
-    )
-
     if len(sys.argv) > 1:
         print('input_filename:', input_filename)
         input_filename = sys.argv[1]
@@ -660,12 +668,22 @@ if __name__ == "__main__":
             if len(sys.argv) > 3:
                 max_frequency = float(sys.argv[3])
 
-    image_filename = input_filename.split('.')[0] + '.png'
-    param_filename = input_filename.split('.')[0] + '_param.csv'
-    data_filename = input_filename.split('.')[0] + '_fitted.csv'
+    if input_filename[-4] != ".":
+        raise ValueError("Could not find file extension")
+    basename = input_filename[:-4]
+
+    image_filename = basename + '.png'
+    param_filename = basename + '_param.csv'
+    data_filename = basename + '_fitted.csv'
 
     frequencies, complex_numbers = read_csv(
         input_filename, min_frequency, max_frequency
+    )
+    min_Lorentz_f = guess_min_Lorentz_f(frequencies, complex_numbers.real)
+
+    num_variable_params = check_input_parameters(
+        fix_phi, fix_m, fix_tau, fix_c1, fix_c2, fix_c3,
+        fix_phi_ex, fix_fbn, fix_wbn, fix_gamma, min_Lorentz_f
     )
 
     fitted_complex_numbers, \
@@ -701,15 +719,3 @@ if __name__ == "__main__":
         data_filename, frequencies, complex_numbers,
         fitted_complex_numbers
     )
-
-
-def guess_min_Lorentz_f(frequencies, real_values):
-    # Try to guess where the Lorentz peak starts.
-    # Find the peak in the real experimental values at the highest frequency
-    # and guess frequency just before, converting it to THz
-    peaks, _ = find_peaks(real_values)
-
-    min_Lorentz_f = 0.
-    if len(peaks) > 0 and peaks[-1] > 1:
-        min_Lorentz_f = frequencies[peaks[-1]-2] / 1.E12
-    return min_Lorentz_f
