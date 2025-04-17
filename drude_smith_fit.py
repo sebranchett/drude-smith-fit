@@ -53,20 +53,41 @@ def read_csv(filename, min_frequency, max_frequency):
     complex_numbers = []
 
     with open(filename, 'r') as file:
-        content = file.read()
-        find_comma = content.find(',')
-    with open(filename, 'r') as file:
-        if find_comma != -1:
-            reader = csv.reader(file, delimiter=',')
+        # Automatically detect the delimiter by checking the first line
+        first_line = file.readline()
+        if first_line.startswith('#'):
+            first_line = file.readline()
+        if ',' in first_line:
+            delimiter = ','
+        elif ';' in first_line:
+            delimiter = ';'
+        elif ' ' in first_line:
+            delimiter = ' '
         else:
-            # try a semi-colon
-            reader = csv.reader(file, delimiter=';')
+            raise ValueError("Unsupported delimiter in the file." +
+                             "Supported delimiters are ',', ';', and ' '.")
+
+        # Rewind the file and read with the detected delimiter
+        file.seek(0)
+        reader = csv.reader(file, delimiter=delimiter)
 
         for row in reader:
+            # Skip row if it starts with a comment character
+            if row[0].startswith('#'):
+                continue
             if min_frequency <= float(row[0]) <= max_frequency:
                 frequency = float(row[0])
-                real_part = float(row[2])
-                imaginary_part = float(row[1])
+                if len(row) == 3:
+                    real_part = float(row[2])
+                    imaginary_part = float(row[1])
+                elif len(row) == 5:
+                    real_part = float(row[4])
+                    imaginary_part = float(row[3])
+                else:
+                    raise ValueError(
+                        "Unexpected number of columns in the file." +
+                        "Expected 3 or 5 columns."
+                    )
                 complex_number = complex(real_part, imaginary_part)
 
                 frequencies.append(frequency)
