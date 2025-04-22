@@ -53,47 +53,69 @@ def read_csv(filename, min_frequency, max_frequency):
     complex_numbers = []
 
     with open(filename, 'r') as file:
-        # Automatically detect the delimiter by checking the first line
-        first_line = file.readline()
-        if first_line.startswith('#'):
-            first_line = file.readline()
-        if ',' in first_line:
-            delimiter = ','
-        elif ';' in first_line:
-            delimiter = ';'
-        elif ' ' in first_line:
-            delimiter = ' '
+        content = file.read()
+        find_comma = content.find(',')
+    with open(filename, 'r') as file:
+        if find_comma != -1:
+            reader = csv.reader(file, delimiter=',')
         else:
-            raise ValueError("Unsupported delimiter in the file." +
-                             "Supported delimiters are ',', ';', and ' '.")
-
-        # Rewind the file and read with the detected delimiter
-        file.seek(0)
-        reader = csv.reader(file, delimiter=delimiter)
+            # try a semi-colon
+            reader = csv.reader(file, delimiter=';')
 
         for row in reader:
-            # Skip row if it starts with a comment character
-            if row[0].startswith('#'):
-                continue
             if min_frequency <= float(row[0]) <= max_frequency:
                 frequency = float(row[0])
-                if len(row) == 3:
-                    real_part = float(row[2])
-                    imaginary_part = float(row[1])
-                elif len(row) == 5:
-                    real_part = float(row[4])
-                    imaginary_part = float(row[3])
-                else:
-                    raise ValueError(
-                        "Unexpected number of columns in the file." +
-                        "Expected 3 or 5 columns."
-                    )
+                real_part = float(row[2])
+                imaginary_part = float(row[1])
                 complex_number = complex(real_part, imaginary_part)
 
                 frequencies.append(frequency)
                 complex_numbers.append(complex_number)
 
     return np.array(frequencies), np.array(complex_numbers)
+
+
+def read_txt(filename, min_frequency, max_frequency):
+    frequencies = []
+    complex_numbers = []
+
+    # read the 5 columns separated by spaces
+    with open(filename, 'r') as file:
+        for line in file:
+            if line.startswith("#"):
+                continue
+            columns = line.split()
+            frequency = float(columns[0])
+
+            if min_frequency <= frequency <= max_frequency:
+                real_part = float(columns[4])
+                imaginary_part = float(columns[3])
+                complex_number = complex(real_part, imaginary_part)
+                frequencies.append(frequency)
+                complex_numbers.append(complex_number)
+
+    return np.array(frequencies), np.array(complex_numbers)
+
+
+def plot_checks(filename):
+    # Throw an error if the file is not a txt file
+    if filename[-4:] != ".txt":
+        raise ValueError("File is not a txt file")
+    # Read the first column as frequencies, the second as check_01 and
+    # the third as check_02
+    frequencies, check_01, check_02 = np.loadtxt(
+        filename, usecols=(0, 1, 2), unpack=True
+    )
+    plt.figure(figsize=(10, 4))
+    plt.subplot(1, 2, 1)
+    plt.plot(frequencies, check_01, label="Check 01")
+    plt.xlabel("Frequency (THz)")
+    plt.ylabel("Check 01")
+    plt.subplot(1, 2, 2)
+    plt.plot(frequencies, check_02, label="Check 02")
+    plt.xlabel("Frequency (THz)")
+    plt.ylabel("Check 02")
+    plt.tight_layout()
 
 
 def drude_smith_c3(
