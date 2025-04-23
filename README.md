@@ -8,7 +8,7 @@ For exciton response, See Equations 2 and 4 in this paper: [Nanoscale, 2019,11, 
 
 
 ## Fit Equation
-$Signal [cm^2 V^{-1} s^{-1}] =$
+$Signal =$
 
 $\phi \cdot \frac{{e \tau}}{{m^*}} \cdot 
 \frac{{1}}{{1 - i \omega \tau}} \cdot
