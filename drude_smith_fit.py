@@ -109,14 +109,14 @@ def plot_checks(filename, min_frequency, max_frequency):
     )
     plt.figure(figsize=(10, 4))
     plt.subplot(1, 2, 1)
-    plt.plot(frequencies, check_01)
+    plt.plot(frequencies, check_02)
     # Draw a vertical line at min_frequency and max_frequency
     plt.axvline(x=min_frequency, color='r', linestyle='--')
     plt.axvline(x=max_frequency, color='r', linestyle='--')
     plt.xlabel("Frequency (Hz)")
     plt.ylabel(r"$|E(\omega)|$")
     plt.subplot(1, 2, 2)
-    plt.plot(frequencies, check_02)
+    plt.plot(frequencies, check_01)
     # Draw a vertical line at min_frequency and max_frequency
     plt.axvline(x=min_frequency, color='r', linestyle='--')
     plt.axvline(x=max_frequency, color='r', linestyle='--')
