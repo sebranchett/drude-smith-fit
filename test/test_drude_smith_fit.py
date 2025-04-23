@@ -38,7 +38,7 @@ class DrudeSmithFitTestCase(unittest.TestCase):
             frequencies, phi, m, tau, c1, c2, c3,
             phi_ex, fbn, wbn, gamma
         )
-        np.testing.assert_array_almost_equal(result, expected_result)
+        np.testing.assert_array_almost_equal(result, 1.E-4 * expected_result)
 
     def test_arrange_parameters_with_std_dev_false(self):
         fit_values = [11.0, 22.0, 33.0]
@@ -64,7 +64,7 @@ class DrudeSmithFitTestCase(unittest.TestCase):
             31.374944,  56.292759,  71.334921,  76.777795,  75.125706
         ])
         result = fit_function(frequencies, fit_values)
-        np.testing.assert_array_almost_equal(result, expected_result)
+        np.testing.assert_array_almost_equal(result, 1.E-4 * expected_result)
 
     def test_perform_fit(self):
         frequencies = np.array([1E12, 2E12, 3E12, 4E12, 5E12])
@@ -83,21 +83,23 @@ class DrudeSmithFitTestCase(unittest.TestCase):
             4.804727+0.869923j, 4.404369+1.760269j, 3.696767+2.368778j,
             2.952127+2.621344j, 2.323706+2.638324j
         ])
-        np.testing.assert_array_almost_equal(
-            fitted_complex_numbers, expected_result
-        )
+        assert np.isclose(
+            fitted_complex_numbers, expected_result, rtol=.001
+        ).all()
+
         expected_result = np.array([
-            1., 12.365495, 50.029175e-15, -0.31461, 0., 0., 0., 0., 0., 0.
+            1., 12.365495e-4, 50.029175e-15, -0.31461, 0., 0., 0., 0., 0., 0.
         ])
-        np.testing.assert_array_almost_equal(
-            params_fit, expected_result, decimal=5
-        )
+        assert np.isclose(
+            params_fit, expected_result, rtol=.001
+        ).all()
+
         expected_result = np.array([
-            0., 8.801074, 92.359832e-15,  1.231788, 0., 0., 0., 0., 0., 0.
+            0., 8.801074e-4, 92.359832e-15,  1.231788, 0., 0., 0., 0., 0., 0.
         ])
-        np.testing.assert_array_almost_equal(
-            std_dev_fit, expected_result, decimal=5
-        )
+        assert np.isclose(
+            std_dev_fit, expected_result, rtol=.001
+        ).all()
 
 
 if __name__ == '__main__':

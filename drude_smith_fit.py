@@ -72,7 +72,8 @@ def read_csv(filename, min_frequency, max_frequency):
                 frequencies.append(frequency)
                 complex_numbers.append(complex_number)
 
-    return np.array(frequencies), np.array(complex_numbers)
+    # convert from cm^2 V^-1 s^-1 to m^2 V^-1 s^-1
+    return np.array(frequencies), 1.E-4 * np.array(complex_numbers)
 
 
 def read_txt(filename, min_frequency, max_frequency):
@@ -97,7 +98,7 @@ def read_txt(filename, min_frequency, max_frequency):
     return np.array(frequencies), np.array(complex_numbers)
 
 
-def plot_checks(filename):
+def plot_checks(filename, min_frequency, max_frequency):
     # Throw an error if the file is not a txt file
     if filename[-4:] != ".txt":
         raise ValueError("File is not a txt file")
@@ -108,13 +109,19 @@ def plot_checks(filename):
     )
     plt.figure(figsize=(10, 4))
     plt.subplot(1, 2, 1)
-    plt.plot(frequencies, check_01, label="Check 01")
-    plt.xlabel("Frequency (THz)")
-    plt.ylabel("Check 01")
+    plt.plot(frequencies, check_01)
+    # Draw a vertical line at min_frequency and max_frequency
+    plt.axvline(x=min_frequency, color='r', linestyle='--')
+    plt.axvline(x=max_frequency, color='r', linestyle='--')
+    plt.xlabel("Frequency (Hz)")
+    plt.ylabel(r"$|E(\omega)|$")
     plt.subplot(1, 2, 2)
-    plt.plot(frequencies, check_02, label="Check 02")
-    plt.xlabel("Frequency (THz)")
-    plt.ylabel("Check 02")
+    plt.plot(frequencies, check_02)
+    # Draw a vertical line at min_frequency and max_frequency
+    plt.axvline(x=min_frequency, color='r', linestyle='--')
+    plt.axvline(x=max_frequency, color='r', linestyle='--')
+    plt.xlabel("Frequency (Hz)")
+    plt.ylabel(r"$\Delta |E(\omega)|$")
     plt.tight_layout()
 
 
@@ -126,7 +133,6 @@ def drude_smith_c3(
     # interpret tau as if it is in fs, this helps the fit to converge
     e = 1.602E-19
     m0 = 9.109E-31
-    conversion = 10000.  # input is in cm^2
     tau = tau * 1E-15  # convert tau from fs to s
     w = 2. * np.pi * frequencies
     w_tau = w * tau
@@ -149,7 +155,7 @@ def drude_smith_c3(
         (wbn**2 - w**2 - (1j * w * gamma))
     ex = phi_ex * ex
     complex_argument += ex
-    return conversion * complex_argument
+    return complex_argument
 
 
 def arrange_parameters(fit_values, std_dev=False):
@@ -517,8 +523,8 @@ def plot_experimental_and_fitted_data(
         linestyle='--'
     )
     plt.legend()
-    plt.xlabel('Frequency')
-    plt.ylabel('Real and Imaginary Parts')
+    plt.xlabel('Frequency ($Hz$)')
+    plt.ylabel('Real and Imaginary Parts ($m^2$ $V^{-1}$ $s^{-1}$)')
     plt.title(title)
     plt.savefig(filename)
     plt.show()

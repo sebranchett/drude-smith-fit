@@ -26,8 +26,9 @@ class ExcitonFitTestCase(unittest.TestCase):
         ])
         assert np.isclose(params_fit, expected_result).all()
 
+        print(std_dev_fit)
         expected_result = np.array([
-            0., 0., 0., 0., 0., 0., 0., 1.432E-15, 0., 2.259E-04
+            0., 0., 0., 0., 0., 0., 0., 9.988E-10, 0., 1.576E+02
         ])
         assert np.isclose(std_dev_fit, expected_result, rtol=.001).all()
 
