@@ -20,8 +20,10 @@ $\phi_{EX} \cdot \frac{{e}}{{i m^*}} \cdot
 where $\omega = 2 \pi \cdot frequency$.
 
 ## Things to note
-* Experimental input data must be in $cm^2$ $V^{-1}$ $s^{-1}$ (not SI units)
+* Experimental input data in a `.csv` file must be in $cm^2$ $V^{-1}$ $s^{-1}$. The data is converted to $m^2$ $V^{-1}$ $s^{-1}$ internally
+* Experimental input data in a `.txt` file must be in $m^2$ $V^{-1}$ $s^{-1}$
 * m_fit is $m$ where $m^* = m * m0$
+* Results may have to be multiplied by an experimental set-up dependent factor
 
 
 ## More things to note

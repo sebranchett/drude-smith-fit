@@ -5,6 +5,9 @@ from scipy.optimize import curve_fit
 from scipy.signal import find_peaks
 import matplotlib.pyplot as plt
 
+# set the default global variable 'factor'
+factor = 1.
+
 
 def print_help():
     print("Usage: python drude_smith_fit.py [input_filename [min_frequency" +
@@ -17,11 +20,19 @@ def print_help():
     print("")
     print("")
     print("input_filename: The name of the file containing the experimental" +
-          " data. The file should be a CSV file with the first column" +
-          " containing the frequency in Hz, the second column containing" +
-          " the imaginary part of the complex number, and the third column" +
-          " containing the real part of the complex number.")
-    print("*** UNITS must be cm2 V-1 s-1. ***")
+          " data. The file should be:\n",
+          " either\n",
+          " a CSV file with UNITS cm2 V-1 s-1\n",
+          " first column contains the frequency in Hz,\n",
+          " second column contains the imaginary part of a complex number,\n",
+          " and third column contains the real part of a complex number;\n",
+          " or\n",
+          " a TXT file with UNITS m2 V-1 s-1\n",
+          " first column contains the frequency in Hz,\n",
+          " second column contains delta |E(omega)|,\n",
+          " third column contains |E(omega)|,\n",
+          " fourth column contains the imaginary part of a complex number,\n",
+          " and fifth column contains the real part of a complex number.")
     print("Default is 'mobility.csv'.")
     print("")
     print("min_frequency, max_frequency: The minimum and maximum " +
@@ -129,6 +140,7 @@ def drude_smith_c3(
     frequencies, phi, m, tau, c1, c2=0., c3=0.,
     phi_ex=0., fbn=0., wbn=0., gamma=0.
 ):
+    global factor
     # Calculate the Drude-Smith mobility with 3 c coefficients
     # interpret tau as if it is in fs, this helps the fit to converge
     e = 1.602E-19
@@ -155,7 +167,7 @@ def drude_smith_c3(
         (wbn**2 - w**2 - (1j * w * gamma))
     ex = phi_ex * ex
     complex_argument += ex
-    return complex_argument
+    return factor * complex_argument
 
 
 def arrange_parameters(fit_values, std_dev=False):
@@ -309,8 +321,11 @@ def fit_function_1(frequencies, fit01):
     return fit_function(frequencies, fit_values)
 
 
-def perform_fit(frequencies, complex_numbers, num_variable_params):
-    global input_parameters
+def perform_fit(frequencies, orig_complex_numbers, num_variable_params):
+    global input_parameters, factor
+    # fitting works better if the values are scaled to be between ~ 0 and 1000.
+    factor = 1000. / orig_complex_numbers.max().real
+    complex_numbers = factor * orig_complex_numbers
     # Set some physics boundaries
     min_Lorentz_f = input_parameters[10]
     min_phi = 0.
@@ -458,6 +473,9 @@ def perform_fit(frequencies, complex_numbers, num_variable_params):
     fitted_complex_numbers = \
         fitted_stretched_complex_numbers[:len(frequencies)] + \
         1j * fitted_stretched_complex_numbers[len(frequencies):]
+
+    # fitting was scaled, so scale back the fitted values
+    fitted_complex_numbers /= factor
 
     std_dev = np.sqrt(np.diag(pcov))
     params_fit = arrange_parameters(params)
