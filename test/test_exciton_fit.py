@@ -11,6 +11,7 @@ class ExcitonFitTestCase(unittest.TestCase):
         frequencies, complex_numbers = read_csv(
             'test/test_exciton.csv', 0., 2.5E12
         )
+        complex_numbers *= 1.e-4
         num_variable_params = 2
         fitted_complex_numbers, params_fit, std_dev_fit = perform_fit(
             frequencies, complex_numbers, num_variable_params
@@ -45,7 +46,7 @@ class ExcitonFitTestCase(unittest.TestCase):
         assert np.isclose(params_fit, expected_result).all()
 
         expected_result = np.array([
-            0., 1.366E-18, 1.379E-29, 0., 0., 0., 0., 0., 0., 0.
+            0., 1.128E-18, 1.139E-29, 0., 0., 0., 0., 0., 0., 0.
         ])
         assert np.isclose(std_dev_fit, expected_result, rtol=.001).all()
 
@@ -58,6 +59,7 @@ class ExcitonFitTestCase(unittest.TestCase):
         frequencies, complex_numbers = read_csv(
             'test/test_combine.csv', 0., 2.5E13
         )
+        complex_numbers *= 1.e-4
         num_variable_params = 5
         fitted_complex_numbers, params_fit, std_dev_fit = perform_fit(
             frequencies, complex_numbers, num_variable_params

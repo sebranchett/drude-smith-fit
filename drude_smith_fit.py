@@ -83,8 +83,7 @@ def read_csv(filename, min_frequency, max_frequency):
                 frequencies.append(frequency)
                 complex_numbers.append(complex_number)
 
-    # convert from cm^2 V^-1 s^-1 to m^2 V^-1 s^-1
-    return np.array(frequencies), 1.E-4 * np.array(complex_numbers)
+    return np.array(frequencies), np.array(complex_numbers)
 
 
 def read_txt(filename, min_frequency, max_frequency):
