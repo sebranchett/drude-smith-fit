@@ -74,6 +74,14 @@ def read_csv(filename, min_frequency, max_frequency):
             reader = csv.reader(file, delimiter=';')
 
         for row in reader:
+            # skip the row if the columns cannot be converted to float
+            # these are comments, annotations, etc.
+            try:
+                float(row[0])
+                float(row[1])
+                float(row[2])
+            except ValueError:
+                continue
             if min_frequency <= float(row[0]) <= max_frequency:
                 frequency = float(row[0])
                 real_part = float(row[2])
