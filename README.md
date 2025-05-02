@@ -1,5 +1,5 @@
 # Fit experimental data using Drude-Smith mobility model and Lorentz oscillator exciton response
-Created with the help of GitHub Copilot.
+Created with the help of GitHub Copilot, [Laurens Siebbeles](https://www.tudelft.nl/tnw/over-faculteit/afdelingen/chemical-engineering/principal-investigators/laurens-siebbeles), [Goutam Ghosh](https://nl.linkedin.com/in/goutam-ghosh-919a28a1) and [David van Houten](https://nl.linkedin.com/in/david-van-houten-32b586203).
 
 
 For Drude-Smith mobility model, see Figure 3 and Equation 3 in this paper: https://www.nature.com/articles/ncomms9195 also [available here](https://repository.tudelft.nl/islandora/object/uuid:f809d8dd-b180-4564-af78-17170851451a?collection=research).
