@@ -20,11 +20,9 @@ $\phi_{EX} \cdot \frac{{e}}{{i m^*}} \cdot
 where $\omega = 2 \pi \cdot frequency$.
 
 ## Things to note
-* Experimental input data in a `.csv` file must be in $cm^2$ $V^{-1}$ $s^{-1}$. The data is converted to $m^2$ $V^{-1}$ $s^{-1}$ internally
-* Experimental input data in a `.txt` file must be in $m^2$ $V^{-1}$ $s^{-1}$
+* Experimental input data in a `.csv` file must be in $m^2$ $V^{-1}$ $s^{-1}$. The conversion from $cm^2$ $V^{-1}$ $s^{-1}$ is shown in the `jupyter_drude_smith.ipynb` notebook
+* Experimental input data in a `.txt` file must be converted to mobility in $m^2$ $V^{-1}$ $s^{-1}$. An example is shown in the `jupyter_drude_smith.ipynb` notebook
 * m_fit is $m$ where $m^* = m * m0$
-* Results may have to be multiplied by an experimental set-up dependent factor
-
 
 ## More things to note
 * Fit doesn't work well for parameters of very different orders of magnitude, so 'optimize' works with Femtoseconds and Terahertz. Functions `drude_smith_c3` and `perform_fit` handle the conversions

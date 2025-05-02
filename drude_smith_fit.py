@@ -22,17 +22,17 @@ def print_help():
     print("input_filename: The name of the file containing the experimental" +
           " data. The file should be:\n",
           " either\n",
-          " a CSV file with UNITS cm2 V-1 s-1\n",
+          " a CSV file with UNITS m2 V-1 s-1\n",
           " first column contains the frequency in Hz,\n",
-          " second column contains the imaginary part of a complex number,\n",
-          " and third column contains the real part of a complex number;\n",
+          " second column contains the imaginary part of the mobility,\n",
+          " and third column contains the real part of the mobility;\n",
           " or\n",
           " a TXT file with UNITS m2 V-1 s-1\n",
           " first column contains the frequency in Hz,\n",
-          " second column contains delta |E(omega)|,\n",
-          " third column contains |E(omega)|,\n",
-          " fourth column contains the imaginary part of a complex number,\n",
-          " and fifth column contains the real part of a complex number.")
+          " second column contains delta |E(omega)|, not used,\n",
+          " third column contains |E(omega)|, not used,\n",
+          " fourth column contains the imaginary part of the mobility,\n",
+          " and fifth column contains the real part of the mobility.")
     print("Default is 'mobility.csv'.")
     print("")
     print("min_frequency, max_frequency: The minimum and maximum " +
